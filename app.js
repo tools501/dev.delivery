@@ -2281,10 +2281,6 @@ function renderDetailsView(item) {
     </div>
 
     <div>
-      <b>${escapeHtml(uiLabels.weightKg)}:</b> ${escapeHtml(item.weightKg || 'Не вказано')}
-    </div>
-  
-    <div>
       <b>Створення:</b> ${escapeHtml(item.createdAt)}
     </div>
   
@@ -2324,6 +2320,10 @@ function renderDetailsView(item) {
       <b>${escapeHtml(uiLabels.comment)}:</b>
 
       <div class="details-comment-text">${escapeHtml(item.comment || 'Не вказано')}</div>
+    </div>
+
+    <div>
+      <b>${escapeHtml(uiLabels.weightKg)}:</b> ${escapeHtml(item.weightKg || 'Не вказано')}
     </div>
 
     ${editButton}
@@ -2376,17 +2376,6 @@ function renderEditForm(item) {
       </label>
 
       <label class="edit-select-field">
-        <span>${escapeHtml(uiLabels.weightKg)}</span>
-
-        <input
-          type="text"
-          inputmode="decimal"
-          class="edit-weight-kg"
-          value="${escapeHtml(item.weightKg || '')}"
-        >
-      </label>
-
-      <label class="edit-select-field">
         <span>${escapeHtml(uiLabels.method)}</span>
 
         <div class="select-wrap">
@@ -2434,6 +2423,17 @@ function renderEditForm(item) {
         class="edit-comment"
         placeholder="${escapeHtml(uiLabels.comment)}"
       >${escapeHtml(item.comment)}</textarea>
+
+      <label class="edit-select-field">
+        <span>${escapeHtml(uiLabels.weightKg)}</span>
+
+        <input
+          type="text"
+          inputmode="decimal"
+          class="edit-weight-kg"
+          value="${escapeHtml(item.weightKg || '')}"
+        >
+      </label>
 
       <div class="details-actions">
         <button
