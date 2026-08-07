@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Delivery</title>
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" defer></script>
+</head>
+<body>
+
+  <div id="loginBlock" class="login-screen">
+
+    <div class="login-card">
+
+      <div class="login-logo">
+        Delivery
+      </div>
+
+      <div id="g_id_onload"
+        data-client_id="758097653129-i5cda00k5b73uudvmmalj2jdvk70t5jr.apps.googleusercontent.com"
+        data-callback="handleCredentialResponse"
+        data-auto_prompt="false">
+      </div>
+
+      <div class="g_id_signin"></div>
+
+    </div>
+
+  </div>
+
+  <div id="loader" class="hidden">
+
+    <div class="loader-boxes">
+  
+      <div class="loader-box"></div>
+      <div class="loader-box"></div>
+      <div class="loader-box"></div>
+      <div class="loader-box"></div>
+      <div class="loader-box"></div>
+  
+    </div>
+  
+  </div>
+
+  <div id="twoFactorBlock" class="two-factor-screen hidden">
+
+    <div class="two-factor-card">
+
+      <div class="two-factor-title">
+        Підтвердження 2FA
+      </div>
+
+      <input
+        id="twoFactorCode"
+        class="two-factor-code"
+        type="text"
+        inputmode="numeric"
+        autocomplete="one-time-code"
+        maxlength="6"
+        placeholder="000000"
+      >
+
+      <button id="twoFactorSubmitBtn" class="two-factor-submit">
+        Підтвердити
+      </button>
+
+      <button id="twoFactorCancelBtn" class="two-factor-cancel">
+        Скасувати
+      </button>
+
+    </div>
+
+  </div>
+
+  <div id="deniedScreen" class="hidden">
+
+    <div class="denied-card">
+  
+      <div class="denied-title">
+        Немає доступу
+      </div>
+  
+      <div class="denied-text">
+        Ваш акаунт не має доступу до системи
+      </div>
+  
+    </div>
+  
+  </div>
+
+  <div id="app" class="hidden">
+
+    <div class="container">
+
+      <div class="topbar">
+
+        <div id="userInfo"></div>
+
+        <button id="hubBtn" class="hub-btn">
+          Hub
+        </button>
+      
+      </div>
+
+      <section id="adminDashboard" class="admin-dashboard hidden">
+
+        <div class="dashboard-header">
+
+          <div class="dashboard-title">
+            Статистика
+          </div>
+
+        </div>
+
+        <div id="dashboardResult" class="dashboard-result"></div>
+
+        <div class="dashboard-subtitle">
+          Конструктор дашборду
+        </div>
+
+        <div class="dashboard-period">
+
+          <label>
+            <span>Від</span>
+
+            <input
+              type="date"
+              id="dashboardFrom"
+            >
+          </label>
+
+          <label>
+            <span>До</span>
+
+            <input
+              type="date"
+              id="dashboardTo"
+            >
+          </label>
+
+        </div>
+
+        <div id="dashboardFilters" class="dashboard-filters"></div>
+
+        <div class="dashboard-actions">
+
+          <button id="addDashboardFilterBtn" class="dashboard-add-btn">
+            + Додати
+          </button>
+
+          <button id="resetDashboardBtn" class="dashboard-reset-btn" disabled>
+            Очистити
+          </button>
+
+          <button id="buildDashboardBtn" class="dashboard-build-btn" hidden>
+            Сформувати
+          </button>
+
+        </div>
+
+        <label class="dashboard-group">
+          <span>Групувати по</span>
+
+          <div class="select-wrap">
+
+            <select id="dashboardGroupBy">
+              <option value="status">
+                Статус
+              </option>
+
+              <option value="unit">
+                Field B
+              </option>
+
+              <option value="crew">
+                Field E
+              </option>
+
+              <option value="method">
+                Field D
+              </option>
+
+              <option value="destination">
+                Field C
+              </option>
+            </select>
+
+          </div>
+
+        </label>
+
+        <label class="dashboard-zero-toggle">
+          <input
+            type="checkbox"
+            id="dashboardShowZeroValues"
+          >
+
+          <span class="dashboard-zero-switch" aria-hidden="true"></span>
+
+          <span>Показати нульові</span>
+        </label>
+
+      </section>
+
+      <div id="toggleFormBtn" class="toggle-form-btn">
+
+        <span id="toggleFormIcon">
+          +
+        </span>
+      
+        <span id="toggleFormText">
+          Create
+        </span>
+      
+      </div>
+
+      <div id="shipmentForm" class="form hidden-form">
+
+        <div class="select-wrap">
+
+          <select id="unit">
+            <option value="" disabled selected>
+              Select B
+            </option>
+          </select>
+
+        </div>
+
+        <div class="select-wrap">
+
+          <select id="destination">
+            <option value="" disabled selected>
+              Select C
+            </option>
+          </select>
+
+        </div>
+
+        <input
+          id="weightKg"
+          type="text"
+          inputmode="decimal"
+          placeholder="Вага замовлення (кг)"
+        >
+
+        <textarea
+          id="comment"
+          placeholder="Склад замовлення"
+        ></textarea>
+
+        <button id="createBtn">
+          Create
+        </button>
+
+      </div>
+
+      <div class="shipments-header">
+
+        <div class="shipments-title">
+          List
+        </div>
+      
+        <button id="loadBtn">
+          Оновити
+        </button>
+      
+      </div>
+
+      <div id="listFilterNotice" class="list-filter-notice hidden">
+
+        <span id="listFilterText"></span>
+
+        <button id="clearListFilterBtn">
+          Очистити
+        </button>
+
+      </div>
+
+      <div id="shipmentsLoader" class="hidden">
+
+        <div class="loader-boxes">
+      
+          <div class="loader-box"></div>
+          <div class="loader-box"></div>
+          <div class="loader-box"></div>
+          <div class="loader-box"></div>
+          <div class="loader-box"></div>
+      
+        </div>
+      
+      </div>
+
+      <div id="shipments"></div>
+
+    </div>
+
+  </div>
+
+  <button id="scrollTopBtn" class="hidden">
+    ˄
+  </button>
+
+  <div id="toast"></div>
+
+  <div id="sessionWarning" class="session-warning hidden">
+
+    <div id="sessionWarningText" class="session-warning-text">
+      Сесія завершиться через 5 хвилин
+    </div>
+  
+    <button id="reloadWarningBtn">
+      Оновити сторінку
+    </button>
+  
+  </div>
+
+  <div id="sessionExpired" class="session-expired hidden">
+
+    <div class="session-expired-card">
+  
+      <div class="session-expired-title">
+        Сесія завершилась
+      </div>
+  
+      <div class="session-expired-text">
+        Оновіть сторінку для продовження роботи
+      </div>
+  
+      <button id="reloadSessionBtn">
+        Оновити
+      </button>
+  
+    </div>
+  
+  </div>
+
+  <script src="app.js"></script>
+
+</body>
+</html>
