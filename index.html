@@ -347,6 +347,87 @@
 
   <div id="toast"></div>
 
+  <div id="deleteShipmentModal" class="delete-modal hidden">
+
+    <div class="delete-modal-card">
+
+      <div id="deleteModalConfirmStep" class="delete-modal-step">
+
+        <div class="delete-modal-title">
+          Видалити замовлення?
+        </div>
+
+        <div id="deleteModalSummary" class="delete-modal-text"></div>
+
+        <div class="delete-modal-actions">
+
+          <button
+            id="deleteModalCancelBtn"
+            class="delete-modal-btn secondary"
+            type="button"
+          >
+            Скасувати
+          </button>
+
+          <button
+            id="deleteModalNextBtn"
+            class="delete-modal-btn danger"
+            type="button"
+          >
+            Видалити
+          </button>
+
+        </div>
+
+      </div>
+
+      <div id="deleteModalReasonStep" class="delete-modal-step hidden">
+
+        <div class="delete-modal-title">
+          Причина видалення
+        </div>
+
+        <div class="delete-modal-text">
+          Напишіть, чому видаляємо замовлення. Мінімум 5 символів.
+        </div>
+
+        <textarea
+          id="deleteReasonInput"
+          class="delete-reason-input"
+          maxlength="500"
+          placeholder="Причина видалення"
+        ></textarea>
+
+        <div id="deleteReasonCounter" class="delete-reason-counter">
+          0 / 500
+        </div>
+
+        <div class="delete-modal-actions">
+
+          <button
+            id="deleteModalBackBtn"
+            class="delete-modal-btn secondary"
+            type="button"
+          >
+            Назад
+          </button>
+
+          <button
+            id="deleteModalSubmitBtn"
+            class="delete-modal-btn danger"
+            type="button"
+          >
+            Видалити замовлення
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
   <div id="sessionWarning" class="session-warning hidden">
 
     <div id="sessionWarningText" class="session-warning-text">
