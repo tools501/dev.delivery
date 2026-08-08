@@ -216,7 +216,7 @@ button {
   text-align: center;
   white-space: nowrap;
 
-  opacity: 0.16;
+  opacity: 0.14;
   pointer-events: none;
 
   transform:
@@ -2089,7 +2089,7 @@ html {
     font-size: clamp(30px, 12vw, 48px);
     letter-spacing: 0.07em;
 
-    opacity: 0.13;
+    opacity: 0.14;
 
     transform:
       translate(-50%, -50%)
