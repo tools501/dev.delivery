@@ -863,9 +863,16 @@ async function syncShipmentChanges() {
 
     const version = result.data.version || '';
     const changes = result.data.changes || [];
+    const deletedIds = result.data.deletedIds || [];
 
-    if (changes.length) {
-      applyIncrementalShipmentChanges(changes);
+    if (
+      changes.length ||
+      deletedIds.length
+    ) {
+      applyIncrementalShipmentChanges(
+        changes,
+        deletedIds
+      );
     }
 
     if (version) {
@@ -1356,7 +1363,10 @@ function applyShipments(items) {
   renderDashboard();
 }
 
-function applyIncrementalShipmentChanges(changes) {
+function applyIncrementalShipmentChanges(
+  changes,
+  deletedIds = []
+) {
 
   const itemsById = new Map(
     allShipments.map(item => [
@@ -1365,6 +1375,17 @@ function applyIncrementalShipmentChanges(changes) {
     ])
   );
   const appliedIds = new Set();
+  let hasDeletions = false;
+
+  deletedIds.forEach(id => {
+    if (itemsById.delete(String(id))) {
+      hasDeletions = true;
+    }
+
+    if (String(editingShipmentId) === String(id)) {
+      editingShipmentId = null;
+    }
+  });
 
   changes.forEach(item => {
     const id = String(item.id);
@@ -1388,6 +1409,18 @@ function applyIncrementalShipmentChanges(changes) {
   });
 
   if (!appliedIds.size) {
+    if (hasDeletions) {
+      allShipments = Array.from(itemsById.values())
+        .sort((a, b) => {
+          return new Date(b.createdAtRaw) -
+                 new Date(a.createdAtRaw);
+        });
+
+      renderVisibleShipments();
+      renderDashboard();
+      setUpdateNotice(false);
+    }
+
     return;
   }
 
@@ -1400,6 +1433,26 @@ function applyIncrementalShipmentChanges(changes) {
   renderIncrementalShipmentChanges(appliedIds);
   renderDashboard();
   setUpdateNotice(false);
+}
+
+function applyLocalShipmentDelete(id, version) {
+
+  applyIncrementalShipmentChanges(
+    [],
+    [id]
+  );
+
+  const nextVersion = Number(version || 0);
+  const currentVersion = Number(
+    lastKnownShipmentsVersion || 0
+  );
+
+  if (nextVersion > currentVersion) {
+    lastKnownShipmentsVersion = String(nextVersion);
+  } else {
+    lastKnownShipmentsVersion =
+      getShipmentsVersion(allShipments);
+  }
 }
 
 function getLatestShipmentById(id) {
@@ -2985,7 +3038,10 @@ async function submitDeleteShipment() {
     closeDeleteShipmentModal();
     editingShipmentId = null;
     showToast('Замовлення видалено', 'success');
-    await loadShipments();
+    applyLocalShipmentDelete(
+      result.data.id,
+      result.data.version
+    );
 
   } catch (e) {
     console.error(e);
