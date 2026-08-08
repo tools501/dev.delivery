@@ -19,6 +19,7 @@ let allShipments = [];
 let activeListFilter = null;
 let shipmentSearchQuery = '';
 let shipmentSearchOpened = false;
+let shipmentPendingDelete = null;
 let shipmentOptions = {
   units: [],
   crews: [],
@@ -187,6 +188,36 @@ const listFilterText =
 
 const clearListFilterBtn =
   document.getElementById('clearListFilterBtn');
+
+const deleteShipmentModal =
+  document.getElementById('deleteShipmentModal');
+
+const deleteModalConfirmStep =
+  document.getElementById('deleteModalConfirmStep');
+
+const deleteModalReasonStep =
+  document.getElementById('deleteModalReasonStep');
+
+const deleteModalSummary =
+  document.getElementById('deleteModalSummary');
+
+const deleteReasonInput =
+  document.getElementById('deleteReasonInput');
+
+const deleteReasonCounter =
+  document.getElementById('deleteReasonCounter');
+
+const deleteModalCancelBtn =
+  document.getElementById('deleteModalCancelBtn');
+
+const deleteModalNextBtn =
+  document.getElementById('deleteModalNextBtn');
+
+const deleteModalBackBtn =
+  document.getElementById('deleteModalBackBtn');
+
+const deleteModalSubmitBtn =
+  document.getElementById('deleteModalSubmitBtn');
 
 let formOpened = false;
 
@@ -968,6 +999,11 @@ function canEditDeliveryPriority() {
   const role = getCurrentUserRole();
 
   return role === 'admin';
+}
+
+function canDeleteShipment() {
+
+  return getCurrentUserRole() === 'admin';
 }
 
 function canEditShipment(item) {
@@ -2847,6 +2883,124 @@ async function saveShipmentEdit(item, details) {
   }
 }
 
+function updateDeleteReasonCounter() {
+
+  deleteReasonCounter.innerText =
+    `${deleteReasonInput.value.length} / 500`;
+}
+
+function closeDeleteShipmentModal() {
+
+  shipmentPendingDelete = null;
+
+  deleteShipmentModal.classList.add('hidden');
+  deleteModalConfirmStep.classList.remove('hidden');
+  deleteModalReasonStep.classList.add('hidden');
+  deleteModalSubmitBtn.classList.remove('loading');
+  deleteReasonInput.value = '';
+  updateDeleteReasonCounter();
+}
+
+function openDeleteShipmentModal(item) {
+
+  if (!canDeleteShipment()) {
+    showToast('Недостатньо прав для видалення');
+    return;
+  }
+
+  shipmentPendingDelete = item;
+
+  deleteModalSummary.innerHTML = `
+    <div><b>ID:</b> ${escapeHtml(item.id)}</div>
+    <div><b>${escapeHtml(uiLabels.destination)}:</b> ${escapeHtml(item.destination || 'Не вказано')}</div>
+  `;
+
+  deleteModalConfirmStep.classList.remove('hidden');
+  deleteModalReasonStep.classList.add('hidden');
+  deleteShipmentModal.classList.remove('hidden');
+}
+
+function showDeleteReasonStep() {
+
+  deleteModalConfirmStep.classList.add('hidden');
+  deleteModalReasonStep.classList.remove('hidden');
+  deleteReasonInput.focus();
+}
+
+async function submitDeleteShipment() {
+
+  if (!shipmentPendingDelete) {
+    closeDeleteShipmentModal();
+    return;
+  }
+
+  const reason = deleteReasonInput.value.trim();
+
+  if (
+    reason.length < 5 ||
+    reason.length > 500
+  ) {
+    showToast('Причина видалення повинна містити від 5 до 500 символів');
+    return;
+  }
+
+  deleteModalSubmitBtn.classList.add('loading');
+
+  try {
+    const result = await api(
+      'deleteShipment',
+      {
+        id: shipmentPendingDelete.id,
+        reason
+      }
+    );
+
+    if (!result.success) {
+      if (result.error === 'ADMIN_REQUIRED') {
+        showToast('Недостатньо прав для видалення');
+        return;
+      }
+
+      if (result.error === 'deleteReason length is invalid') {
+        showToast('Причина видалення повинна містити від 5 до 500 символів');
+        return;
+      }
+
+      if (result.error === 'NOT_FOUND') {
+        showToast('Замовлення вже не знайдено. Оновлюю список');
+        closeDeleteShipmentModal();
+        await loadShipments();
+        return;
+      }
+
+      if (result.error === 'deleted shipments sheet is missing') {
+        showToast('Не знайдено таблицю deleted_shipments');
+        return;
+      }
+
+      showToast(result.error);
+      return;
+    }
+
+    closeDeleteShipmentModal();
+    editingShipmentId = null;
+    showToast('Замовлення видалено', 'success');
+    await loadShipments();
+
+  } catch (e) {
+    console.error(e);
+
+    showToast(
+      getRequestErrorMessage(
+        'Помилка видалення замовлення'
+      )
+    );
+
+  } finally {
+    deleteModalSubmitBtn.classList.remove('loading');
+  }
+}
+
 function renderShipments(items) {
 
   const container =
@@ -2894,6 +3048,18 @@ function createShipmentCard(
   options = {}
 ) {
   const div = document.createElement('div');
+  const deleteButton = canDeleteShipment()
+    ? `
+      <button
+        type="button"
+        class="card-delete-btn"
+        aria-label="Видалити замовлення"
+        title="Видалити замовлення"
+      >
+        🗑
+      </button>
+    `
+    : '';
 
   div.className = [
     'card',
@@ -2966,6 +3132,8 @@ function createShipmentCard(
       </div>
 
       <div class="card-details"></div>
+
+      ${deleteButton}
     `;
 
     const toggle =
@@ -2974,6 +3142,9 @@ function createShipmentCard(
     const details =
       div.querySelector('.card-details');
 
+    const deleteBtn =
+      div.querySelector('.card-delete-btn');
+
     let opened = Boolean(options.opened);
 
     details.innerHTML = renderDetailsView(item);
@@ -2981,6 +3152,13 @@ function createShipmentCard(
     if (opened) {
       details.classList.add('details-open');
       toggle.innerText = 'Сховати ⌃';
+    }
+
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', event => {
+        event.stopPropagation();
+        openDeleteShipmentModal(item);
+      });
     }
 
     toggle.addEventListener('click', () => {
@@ -3259,6 +3437,46 @@ exportDashboardBtn.addEventListener(
 );
 
 clearListFilterBtn.addEventListener('click', clearDashboardListFilter);
+
+deleteModalCancelBtn.addEventListener(
+  'click',
+  closeDeleteShipmentModal
+);
+
+deleteModalNextBtn.addEventListener(
+  'click',
+  showDeleteReasonStep
+);
+
+deleteModalBackBtn.addEventListener('click', () => {
+  deleteModalConfirmStep.classList.remove('hidden');
+  deleteModalReasonStep.classList.add('hidden');
+});
+
+deleteModalSubmitBtn.addEventListener(
+  'click',
+  submitDeleteShipment
+);
+
+deleteReasonInput.addEventListener(
+  'input',
+  updateDeleteReasonCounter
+);
+
+deleteShipmentModal.addEventListener('click', event => {
+  if (event.target === deleteShipmentModal) {
+    closeDeleteShipmentModal();
+  }
+});
+
+document.addEventListener('keydown', event => {
+  if (
+    event.key === 'Escape' &&
+    !deleteShipmentModal.classList.contains('hidden')
+  ) {
+    closeDeleteShipmentModal();
+  }
+});
 
 const scrollTopBtn = document.getElementById('scrollTopBtn');
 
