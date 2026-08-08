@@ -270,10 +270,45 @@
           List
         </div>
       
-        <button id="loadBtn">
-          Оновити
-        </button>
+        <div class="shipments-header-actions">
+
+          <button
+            id="shipmentSearchToggle"
+            class="shipment-search-toggle"
+            type="button"
+            aria-label="Пошук по полю Куди"
+            aria-expanded="false"
+          >
+            🔍
+          </button>
+
+          <button id="loadBtn">
+            Оновити
+          </button>
+
+        </div>
       
+      </div>
+
+      <div
+        id="shipmentSearchPanel"
+        class="shipment-search-panel"
+        aria-hidden="true"
+      >
+
+        <div class="shipment-search-box">
+
+          <input
+            id="shipmentSearchInput"
+            type="search"
+            placeholder="Пошук по Куди"
+            autocomplete="off"
+          >
+
+          <div id="shipmentSearchCount" class="shipment-search-count"></div>
+
+        </div>
+
       </div>
 
       <div id="listFilterNotice" class="list-filter-notice hidden">
