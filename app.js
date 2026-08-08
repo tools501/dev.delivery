@@ -2897,6 +2897,13 @@ async function saveShipmentEdit(item, details) {
         return;
       }
 
+      if (result.error === 'NOT_FOUND') {
+        showToast('Замовлення вже видалено');
+        editingShipmentId = null;
+        applyLocalShipmentDelete(item.id);
+        return;
+      }
+
       if (
         result.error === 'FORBIDDEN' ||
         result.error === 'FORBIDDEN_STATUS'
