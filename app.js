@@ -31,6 +31,7 @@ const REQUIRED_UI_LABEL_KEYS = [
   'destination',
   'method',
   'crew',
+  'deliveryPriority',
   'weightKg',
   'comment',
   'createRequest',
@@ -44,6 +45,7 @@ const REQUIRED_UI_LABEL_KEYS = [
   'destinationLength',
   'methodLength',
   'crewLength',
+  'deliveryPriorityInvalid',
   'weightKgRequired',
   'weightKgInvalid',
   'commentRequired',
@@ -62,6 +64,11 @@ const SHIPMENT_STATUSES = [
 ];
 
 const DEFAULT_SHIPMENT_STATUS = 'Нова';
+const DEFAULT_DELIVERY_PRIORITY = 'Стандартний';
+const DELIVERY_PRIORITIES = [
+  DEFAULT_DELIVERY_PRIORITY,
+  'Терміновий'
+];
 const DASHBOARD_ALL_VALUE = 'Всі';
 const API_TIMEOUT_MS = 30 * 1000;
 
@@ -870,6 +877,8 @@ function getRequestErrorMessage(defaultMessage) {
 
 function getShipmentValidationErrorMessage(error) {
   const messages = {
+    'deliveryPriority is invalid': uiLabels.deliveryPriorityInvalid,
+    FORBIDDEN_PRIORITY: 'Тільки superadmin може змінювати пріоритет доставки',
     'weightKg is required': uiLabels.weightKgRequired,
     'weightKg is invalid': uiLabels.weightKgInvalid
   };
@@ -941,8 +950,17 @@ function formatDateInput(date) {
 
 function isAdmin() {
 
+  const role = currentUser &&
+    String(currentUser.role).toLowerCase();
+
+  return role === 'admin' ||
+         role === 'superadmin';
+}
+
+function isSuperAdmin() {
+
   return currentUser &&
-         String(currentUser.role).toLowerCase() === 'admin';
+         String(currentUser.role).toLowerCase() === 'superadmin';
 }
 
 function canEditShipment(item) {
@@ -2403,6 +2421,10 @@ function renderDetailsView(item) {
     <div>
       <b>Дата доставки:</b> ${escapeHtml(item.sentAt || 'Не вказано')}
     </div>
+
+    <div>
+      <b>${escapeHtml(uiLabels.deliveryPriority)}:</b> ${escapeHtml(item.deliveryPriority || DEFAULT_DELIVERY_PRIORITY)}
+    </div>
   
     <div>
       <b>Створив замовлення:</b> ${escapeHtml(item.name)}
@@ -2521,6 +2543,22 @@ function renderEditForm(item) {
         </label>
       </div>
 
+      <label class="edit-select-field">
+        <span>${escapeHtml(uiLabels.deliveryPriority)}</span>
+
+        <div class="select-wrap">
+          <select
+            class="edit-delivery-priority"
+            ${isSuperAdmin() ? '' : 'disabled'}
+          >
+            ${buildOptions(
+              DELIVERY_PRIORITIES,
+              item.deliveryPriority || DEFAULT_DELIVERY_PRIORITY
+            )}
+          </select>
+        </div>
+      </label>
+
       <div class="select-wrap">
         <select class="edit-status">
           ${buildOptions(SHIPMENT_STATUSES, item.status)}
@@ -2580,6 +2618,8 @@ function getEditData(details) {
     sentTime,
     sentAt: combineDateTimeInput(sentDate, sentTime),
     crew: details.querySelector('.edit-crew').value.trim(),
+    deliveryPriority:
+      details.querySelector('.edit-delivery-priority').value,
     weightKg: details.querySelector('.edit-weight-kg').value.trim(),
     status: details.querySelector('.edit-status').value,
     comment: details.querySelector('.edit-comment').value.trim()
@@ -2599,6 +2639,11 @@ function getItemEditData(item) {
       formatTimePartInput(item.sentAtRaw)
     ),
     crew: String(item.crew || '').trim(),
+    deliveryPriority:
+      String(
+        item.deliveryPriority ||
+        DEFAULT_DELIVERY_PRIORITY
+      ),
     weightKg: String(item.weightKg || '').trim(),
     status: String(item.status || ''),
     comment: String(item.comment || '').trim()
@@ -2687,6 +2732,11 @@ function validateEditData(data) {
     !data.sentDate
   ) {
     showToast('Вкажіть дату доставки або очистіть час');
+    return false;
+  }
+
+  if (!DELIVERY_PRIORITIES.includes(data.deliveryPriority)) {
+    showToast(uiLabels.deliveryPriorityInvalid);
     return false;
   }
 
