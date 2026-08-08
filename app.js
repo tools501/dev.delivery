@@ -878,7 +878,7 @@ function getRequestErrorMessage(defaultMessage) {
 function getShipmentValidationErrorMessage(error) {
   const messages = {
     'deliveryPriority is invalid': uiLabels.deliveryPriorityInvalid,
-    FORBIDDEN_PRIORITY: 'Тільки superadmin може змінювати пріоритет доставки',
+    FORBIDDEN_PRIORITY: 'Тільки admin може змінювати пріоритет доставки',
     'weightKg is required': uiLabels.weightKgRequired,
     'weightKg is invalid': uiLabels.weightKgInvalid
   };
@@ -948,19 +948,26 @@ function formatDateInput(date) {
   return value.toISOString().slice(0, 10);
 }
 
-function isAdmin() {
+function getCurrentUserRole() {
 
-  const role = currentUser &&
-    String(currentUser.role).toLowerCase();
-
-  return role === 'admin' ||
-         role === 'superadmin';
+  return String((currentUser && currentUser.role) || '')
+    .toLowerCase()
+    .trim();
 }
 
-function isSuperAdmin() {
+function isAdmin() {
 
-  return currentUser &&
-         String(currentUser.role).toLowerCase() === 'superadmin';
+  const role = getCurrentUserRole();
+
+  return role === 'manager' ||
+         role === 'admin';
+}
+
+function canEditDeliveryPriority() {
+
+  const role = getCurrentUserRole();
+
+  return role === 'admin';
 }
 
 function canEditShipment(item) {
@@ -2549,7 +2556,7 @@ function renderEditForm(item) {
         <div class="select-wrap">
           <select
             class="edit-delivery-priority"
-            ${isSuperAdmin() ? '' : 'disabled'}
+            ${canEditDeliveryPriority() ? '' : 'disabled'}
           >
             ${buildOptions(
               DELIVERY_PRIORITIES,
