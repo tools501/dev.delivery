@@ -1397,8 +1397,10 @@ textarea:focus {
 }
 
 .shipment-search-panel.is-open {
-  max-height: 82px;
-  margin-bottom: 14px;
+  max-height: 64px;
+  margin:
+    -8px 0
+    12px;
   opacity: 1;
   transform: translateY(0);
 
@@ -1410,24 +1412,20 @@ textarea:focus {
   align-items: center;
   gap: 10px;
 
-  padding: 10px 12px;
-
-  background: rgba(255,255,255,0.72);
-
-  border: 1px solid #ececec;
-  border-radius: 12px;
+  padding: 0;
 }
 
 #shipmentSearchInput {
   flex: 1 1 auto;
   min-width: 0;
-  padding: 9px 11px;
+  padding: 9px 0;
 
   color: #111;
-  background: #fff;
+  background: transparent;
 
-  border: 1px solid #e6e6e6;
-  border-radius: 10px;
+  border: none;
+  border-bottom: 1px solid #dedede;
+  border-radius: 0;
 
   font-size: 14px;
   font-weight: 500;
@@ -1435,7 +1433,7 @@ textarea:focus {
 
 #shipmentSearchInput:focus {
   outline: none;
-  border-color: #111;
+  border-bottom-color: #111;
 }
 
 .shipment-search-count {
@@ -1443,7 +1441,7 @@ textarea:focus {
 
   color: #666;
 
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -2344,7 +2342,7 @@ html {
   .shipment-search-box {
     align-items: stretch;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
   }
 
   .shipment-search-count {
