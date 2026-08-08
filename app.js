@@ -17,6 +17,8 @@ let shipmentSyncInProgress = false;
 let lastKnownShipmentsVersion = '';
 let allShipments = [];
 let activeListFilter = null;
+let shipmentSearchQuery = '';
+let shipmentSearchOpened = false;
 let shipmentOptions = {
   units: [],
   crews: [],
@@ -95,6 +97,18 @@ const toggleFormIcon =
 
 const loadBtn =
   document.getElementById('loadBtn');
+
+const shipmentSearchToggle =
+  document.getElementById('shipmentSearchToggle');
+
+const shipmentSearchPanel =
+  document.getElementById('shipmentSearchPanel');
+
+const shipmentSearchInput =
+  document.getElementById('shipmentSearchInput');
+
+const shipmentSearchCount =
+  document.getElementById('shipmentSearchCount');
 
 const adminDashboard =
   document.getElementById('adminDashboard');
@@ -1743,10 +1757,104 @@ function getVisibleShipments() {
   );
 }
 
+function normalizeShipmentSearchValue(value) {
+
+  return String(value || '')
+    .trim()
+    .toLocaleLowerCase('uk-UA');
+}
+
+function getSearchFilteredShipments(items) {
+
+  const query =
+    normalizeShipmentSearchValue(shipmentSearchQuery);
+
+  if (!query) {
+    return items;
+  }
+
+  return items.filter(item => {
+    return normalizeShipmentSearchValue(
+      item.destination
+    ).includes(query);
+  });
+}
+
+function updateShipmentSearchCount(
+  visibleCount,
+  totalCount
+) {
+
+  if (!shipmentSearchCount) {
+    return;
+  }
+
+  const query =
+    normalizeShipmentSearchValue(shipmentSearchQuery);
+
+  if (query) {
+    shipmentSearchCount.innerText =
+      `Знайдено: ${visibleCount} з ${totalCount}`;
+    return;
+  }
+
+  shipmentSearchCount.innerText =
+    `Всього: ${totalCount}`;
+}
+
 function renderVisibleShipments() {
 
+  const visibleItems = getVisibleShipments();
+  const searchFilteredItems =
+    getSearchFilteredShipments(visibleItems);
+
   updateListFilterNotice();
-  renderShipments(getVisibleShipments());
+  updateShipmentSearchCount(
+    searchFilteredItems.length,
+    visibleItems.length
+  );
+  renderShipments(searchFilteredItems);
+}
+
+function setShipmentSearchOpened(opened) {
+
+  shipmentSearchOpened = opened;
+
+  shipmentSearchPanel.classList.toggle(
+    'is-open',
+    shipmentSearchOpened
+  );
+
+  shipmentSearchPanel.setAttribute(
+    'aria-hidden',
+    shipmentSearchOpened ? 'false' : 'true'
+  );
+
+  shipmentSearchToggle.classList.toggle(
+    'is-active',
+    shipmentSearchOpened
+  );
+
+  shipmentSearchToggle.setAttribute(
+    'aria-expanded',
+    shipmentSearchOpened ? 'true' : 'false'
+  );
+
+  if (shipmentSearchOpened) {
+    window.setTimeout(() => {
+      shipmentSearchInput.focus();
+    }, 120);
+    return;
+  }
+
+  shipmentSearchQuery = '';
+  shipmentSearchInput.value = '';
+  renderVisibleShipments();
+}
+
+function toggleShipmentSearch() {
+
+  setShipmentSearchOpened(!shipmentSearchOpened);
 }
 
 function applyDashboardListFilter(groupKey, groupValue) {
@@ -2914,7 +3022,9 @@ function renderIncrementalShipmentChanges(changedIds) {
 
   const container =
     document.getElementById('shipments');
-  const visibleItems = getVisibleShipments();
+  const baseVisibleItems = getVisibleShipments();
+  const visibleItems =
+    getSearchFilteredShipments(baseVisibleItems);
   const visibleIds = new Set(
     visibleItems.map(item => String(item.id))
   );
@@ -2999,6 +3109,11 @@ function renderIncrementalShipmentChanges(changedIds) {
   ) {
     renderShipments([]);
   }
+
+  updateShipmentSearchCount(
+    visibleItems.length,
+    baseVisibleItems.length
+  );
 }
 
 document.getElementById('createBtn')
@@ -3027,6 +3142,22 @@ document
   });
 
 loadBtn.addEventListener('click', reloadAppData);
+
+shipmentSearchToggle.addEventListener(
+  'click',
+  toggleShipmentSearch
+);
+
+shipmentSearchInput.addEventListener('input', () => {
+  shipmentSearchQuery = shipmentSearchInput.value;
+  renderVisibleShipments();
+});
+
+shipmentSearchInput.addEventListener('keydown', event => {
+  if (event.key === 'Escape') {
+    setShipmentSearchOpened(false);
+  }
+});
 
 addDashboardFilterBtn.addEventListener('click', () => {
   addDashboardFilter('status', DEFAULT_SHIPMENT_STATUS);
@@ -3116,4 +3247,3 @@ document
   });
 
 trySharedSession();
-// test
