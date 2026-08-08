@@ -2890,6 +2890,9 @@ function createShipmentCard(
 
   div.className = [
     'card',
+    item.deliveryPriority === 'Терміновий'
+      ? 'card-priority-urgent'
+      : '',
     options.highlight ? 'card-updated' : ''
   ]
     .filter(Boolean)
