@@ -415,6 +415,10 @@ textarea:focus {
   gap: 8px;
 }
 
+.details-actions.split-actions .details-action {
+  flex: 1 1 0;
+}
+
 .details-action {
   min-height: 38px;
   padding: 8px 12px;
