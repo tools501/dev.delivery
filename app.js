@@ -2508,6 +2508,14 @@ function renderDetailsView(item) {
       </button>
     `
     : '';
+  const actionButtons = deleteButton
+    ? `
+      <div class="details-actions split-actions">
+        ${editButton}
+        ${deleteButton}
+      </div>
+    `
+    : editButton;
 
   return `
     <div>
@@ -2568,10 +2576,7 @@ function renderDetailsView(item) {
       <b>${escapeHtml(uiLabels.weightKg)}:</b> ${escapeHtml(item.weightKg || 'Не вказано')}
     </div>
 
-    <div class="details-actions">
-      ${editButton}
-      ${deleteButton}
-    </div>
+    ${actionButtons}
   `;
 }
 
