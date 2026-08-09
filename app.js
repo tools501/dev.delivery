@@ -1416,7 +1416,7 @@ function applyIncrementalShipmentChanges(
                  new Date(a.createdAtRaw);
         });
 
-      renderVisibleShipments();
+      renderIncrementalShipmentDeletions(deletedIds);
       renderDashboard();
       setUpdateNotice(false);
     }
@@ -1429,6 +1429,10 @@ function applyIncrementalShipmentChanges(
       return new Date(b.createdAtRaw) -
              new Date(a.createdAtRaw);
     });
+
+  if (hasDeletions) {
+    renderIncrementalShipmentDeletions(deletedIds);
+  }
 
   renderIncrementalShipmentChanges(appliedIds);
   renderDashboard();
@@ -3415,6 +3419,44 @@ function renderIncrementalShipmentChanges(changedIds) {
     visibleItems.length,
     baseVisibleItems.length
   );
+}
+
+function renderIncrementalShipmentDeletions(deletedIds) {
+
+  const container =
+    document.getElementById('shipments');
+  const deletedIdSet = new Set(
+    deletedIds.map(id => String(id))
+  );
+
+  deletedIdSet.forEach(id => {
+    const card = Array.from(
+      container.querySelectorAll('.card[data-shipment-id]')
+    ).find(item => {
+      return item.dataset.shipmentId === id;
+    });
+
+    if (card) {
+      card.remove();
+    }
+  });
+
+  const baseVisibleItems = getVisibleShipments();
+  const visibleItems =
+    getSearchFilteredShipments(baseVisibleItems);
+
+  updateListFilterNotice();
+  updateShipmentSearchCount(
+    visibleItems.length,
+    baseVisibleItems.length
+  );
+
+  if (
+    !visibleItems.length &&
+    !container.querySelector('.empty-state')
+  ) {
+    renderShipments([]);
+  }
 }
 
 document.getElementById('createBtn')
