@@ -1008,9 +1008,11 @@ function canEditDeliveryPriority() {
   return role === 'admin';
 }
 
-function canDeleteShipment() {
+function canDeleteShipment(item) {
 
-  return getCurrentUserRole() === 'admin';
+  return getCurrentUserRole() === 'admin' &&
+         item &&
+         item.status === DEFAULT_SHIPMENT_STATUS;
 }
 
 function canEditShipment(item) {
@@ -2967,7 +2969,7 @@ function closeDeleteShipmentModal() {
 
 function openDeleteShipmentModal(item) {
 
-  if (!canDeleteShipment()) {
+  if (!canDeleteShipment(item)) {
     showToast('Недостатньо прав для видалення');
     return;
   }
@@ -3039,6 +3041,11 @@ async function submitDeleteShipment() {
 
       if (result.error === 'deleted shipments sheet is missing') {
         showToast('Не знайдено таблицю deleted_shipments');
+        return;
+      }
+
+      if (result.error === 'DELETE_ONLY_NEW') {
+        showToast('Видаляти можна тільки замовлення зі статусом Нова');
         return;
       }
 
@@ -3115,7 +3122,7 @@ function createShipmentCard(
   options = {}
 ) {
   const div = document.createElement('div');
-  const deleteButton = canDeleteShipment()
+  const deleteButton = canDeleteShipment(item)
     ? `
       <button
         type="button"
