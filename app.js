@@ -2498,6 +2498,16 @@ function renderDetailsView(item) {
       </button>
     `
     : '';
+  const deleteButton = canDeleteShipment(item)
+    ? `
+      <button
+        type="button"
+        class="details-action danger delete-shipment-btn"
+      >
+        Видалити
+      </button>
+    `
+    : '';
 
   return `
     <div>
@@ -2558,7 +2568,10 @@ function renderDetailsView(item) {
       <b>${escapeHtml(uiLabels.weightKg)}:</b> ${escapeHtml(item.weightKg || 'Не вказано')}
     </div>
 
-    ${editButton}
+    <div class="details-actions">
+      ${editButton}
+      ${deleteButton}
+    </div>
   `;
 }
 
@@ -3224,6 +3237,7 @@ function createShipmentCard(
     details.innerHTML = renderDetailsView(item);
 
     if (opened) {
+      div.classList.add('card-details-expanded');
       details.classList.add('details-open');
       toggle.innerText = 'Сховати ⌃';
     }
@@ -3241,6 +3255,7 @@ function createShipmentCard(
 
       if (opened) {
 
+        div.classList.add('card-details-expanded');
         details.classList.add('details-open');
 
         toggle.innerText =
@@ -3259,6 +3274,7 @@ function createShipmentCard(
           );
         }
 
+        div.classList.remove('card-details-expanded');
         details.classList.remove('details-open');
 
         toggle.innerText =
@@ -3272,6 +3288,11 @@ function createShipmentCard(
         editingShipmentId = item.id;
         details.innerHTML = renderEditForm(item);
         setupEditChangeTracking(item, details);
+        return;
+      }
+
+      if (event.target.classList.contains('delete-shipment-btn')) {
+        openDeleteShipmentModal(item);
         return;
       }
 
