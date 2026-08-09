@@ -427,8 +427,20 @@ textarea:focus {
   border-color: #d8d8d8;
 }
 
+.details-action.danger {
+  color: #8f3f3f;
+  background: #fff1f1;
+  border-color: #e7c2c2;
+}
+
 .details-action:hover {
   background: #f1f1f1;
+}
+
+.details-action.danger:hover {
+  color: #743030;
+  background: #ffe8e8;
+  border-color: #dba9a9;
 }
 
 .details-action:disabled {
@@ -479,6 +491,10 @@ textarea:focus {
   background: #fff6f6;
   border-color: #efcccc;
   transform: translateY(-1px);
+}
+
+.card-details-expanded .card-delete-btn {
+  display: none;
 }
 
 .summary-item {
