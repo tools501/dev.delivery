@@ -886,33 +886,6 @@ async function syncShipmentChanges() {
   }
 }
 
-function validateLength(value, min, max) {
-
-  return value.length >= min &&
-         value.length <= max;
-}
-
-function isValidShipmentWeight(value) {
-  if (!/^\d+(\.\d+)?$/.test(value)) {
-    return false;
-  }
-
-  const number = Number(value);
-
-  return Number.isFinite(number) &&
-         number > 0 &&
-         number <= 1000000;
-}
-
-function getRequestErrorMessage(defaultMessage) {
-
-  if (!navigator.onLine) {
-    return 'Немає з’єднання з інтернетом';
-  }
-
-  return defaultMessage;
-}
-
 function getShipmentValidationErrorMessage(error) {
   const messages = {
     'deliveryPriority is invalid': uiLabels.deliveryPriorityInvalid,
@@ -922,68 +895,6 @@ function getShipmentValidationErrorMessage(error) {
   };
 
   return messages[error] || error;
-}
-
-function escapeHtml(value) {
-
-  return String(value || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function formatDateTimeInput(value) {
-
-  if (!value) {
-    return '';
-  }
-
-  const date = new Date(value);
-
-  if (isNaN(date.getTime())) {
-    return '';
-  }
-
-  date.setMinutes(
-    date.getMinutes() - date.getTimezoneOffset()
-  );
-
-  return date.toISOString().slice(0, 16);
-}
-
-function formatDatePartInput(value) {
-
-  return formatDateTimeInput(value).slice(0, 10);
-}
-
-function formatTimePartInput(value) {
-
-  return formatDateTimeInput(value).slice(11, 16);
-}
-
-function combineDateTimeInput(dateValue, timeValue) {
-
-  if (
-    !dateValue ||
-    !timeValue
-  ) {
-    return '';
-  }
-
-  return `${dateValue}T${timeValue}`;
-}
-
-function formatDateInput(date) {
-
-  const value = new Date(date);
-
-  value.setMinutes(
-    value.getMinutes() - value.getTimezoneOffset()
-  );
-
-  return value.toISOString().slice(0, 10);
 }
 
 function getCurrentUserRole() {
@@ -1875,13 +1786,6 @@ function getVisibleShipments() {
     activeListFilter.groupKey,
     activeListFilter.groupValue
   );
-}
-
-function normalizeShipmentSearchValue(value) {
-
-  return String(value || '')
-    .trim()
-    .toLocaleLowerCase('uk-UA');
 }
 
 function getSearchFilteredShipments(items) {
