@@ -2329,9 +2329,11 @@ function getStatusClass(status) {
 
   switch (status) {
 
-    case 'Доставлено':
     case 'Отримано':
       return 'status-success';
+
+    case 'Доставлено':
+      return 'status-delivered';
 
     case 'Нова':
     case 'Частково отримано':
@@ -2350,9 +2352,11 @@ function getCardStatusClass(status) {
 
   switch (status) {
 
-    case 'Доставлено':
     case 'Отримано':
       return 'card-status-done';
+
+    case 'Доставлено':
+      return 'card-status-delivered';
 
     case 'Недоставлено':
     case 'Неотримано':
@@ -2369,11 +2373,12 @@ function getCardStatusBadgeClass(status) {
     return 'card-status-badge-new';
   }
 
-  if (
-    status === 'Доставлено' ||
-    status === 'Отримано'
-  ) {
+  if (status === 'Отримано') {
     return 'card-status-badge-done';
+  }
+
+  if (status === 'Доставлено') {
+    return 'card-status-badge-delivered';
   }
 
   if (
