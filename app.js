@@ -3006,6 +3006,9 @@ function renderShipments(items) {
 
   const container =
     document.getElementById('shipments');
+  const hasSearchQuery = Boolean(
+    normalizeShipmentSearchValue(shipmentSearchQuery)
+  );
 
   container.innerHTML = '';
 
@@ -3019,12 +3022,18 @@ function renderShipments(items) {
         </div>
 
         <div class="empty-title">
-          Список порожній
+          ${
+            hasSearchQuery
+              ? 'Нічого не знайдено'
+              : 'Список порожній'
+          }
         </div>
 
         <div class="empty-text">
           ${
-            activeListFilter
+            hasSearchQuery
+              ? 'За вашим пошуком замовлень немає'
+              : activeListFilter
               ? 'За вибраним результатом заявок немає'
               : 'У вас ще немає відправок'
           }
