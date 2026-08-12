@@ -57,6 +57,7 @@ let uiLabels = null;
 
 const SHIPMENT_STATUSES = [
   'Нова',
+  'На хабі',
   'Доставлено',
   'Недоставлено',
   'Отримано',
@@ -65,6 +66,11 @@ const SHIPMENT_STATUSES = [
 ];
 
 const DEFAULT_SHIPMENT_STATUS = 'Нова';
+const HUB_SHIPMENT_STATUS = 'На хабі';
+const DELETABLE_SHIPMENT_STATUSES = [
+  DEFAULT_SHIPMENT_STATUS,
+  HUB_SHIPMENT_STATUS
+];
 const DEFAULT_DELIVERY_PRIORITY = 'Стандартний';
 const DELIVERY_PRIORITIES = [
   DEFAULT_DELIVERY_PRIORITY,
@@ -923,7 +929,7 @@ function canDeleteShipment(item) {
 
   return getCurrentUserRole() === 'admin' &&
          item &&
-         item.status === DEFAULT_SHIPMENT_STATUS;
+         DELETABLE_SHIPMENT_STATUSES.includes(item.status);
 }
 
 function canEditShipment(item) {
@@ -2335,6 +2341,9 @@ function getStatusClass(status) {
     case 'Доставлено':
       return 'status-delivered';
 
+    case 'На хабі':
+      return 'status-hub';
+
     case 'Нова':
     case 'Частково отримано':
       return 'status-warning';
@@ -2358,6 +2367,9 @@ function getCardStatusClass(status) {
     case 'Доставлено':
       return 'card-status-delivered';
 
+    case 'На хабі':
+      return 'card-status-hub';
+
     case 'Недоставлено':
     case 'Неотримано':
       return 'card-status-failed';
@@ -2371,6 +2383,10 @@ function getCardStatusBadgeClass(status) {
 
   if (status === 'Нова') {
     return 'card-status-badge-new';
+  }
+
+  if (status === 'На хабі') {
+    return 'card-status-badge-hub';
   }
 
   if (status === 'Отримано') {
@@ -2972,7 +2988,7 @@ async function submitDeleteShipment() {
       }
 
       if (result.error === 'DELETE_ONLY_NEW') {
-        showToast('Видаляти можна тільки замовлення зі статусом Нова');
+        showToast('Видаляти можна тільки замовлення зі статусом Нова або На хабі');
         return;
       }
 
