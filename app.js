@@ -22,6 +22,7 @@ let shipmentSearchOpened = false;
 let shipmentPendingDelete = null;
 let shipmentOptions = {
   units: [],
+  hubs: [],
   crews: [],
   methods: [],
   destinations: []
@@ -30,6 +31,7 @@ let shipmentOptions = {
 const REQUIRED_UI_LABEL_KEYS = [
   'unit',
   'destination',
+  'hub',
   'method',
   'crew',
   'deliveryPriority',
@@ -39,11 +41,14 @@ const REQUIRED_UI_LABEL_KEYS = [
   'shipmentsTitle',
   'chooseUnit',
   'chooseDestination',
+  'chooseHub',
   'chooseMethod',
   'unitRequired',
   'unitLength',
   'destinationRequired',
   'destinationLength',
+  'hubRequired',
+  'hubLength',
   'methodLength',
   'crewLength',
   'deliveryPriorityInvalid',
@@ -896,6 +901,8 @@ function getShipmentValidationErrorMessage(error) {
   const messages = {
     'deliveryPriority is invalid': uiLabels.deliveryPriorityInvalid,
     FORBIDDEN_PRIORITY: 'Тільки admin може змінювати пріоритет доставки',
+    'hub is required': uiLabels.hubRequired,
+    'hub length is invalid': uiLabels.hubLength,
     'weightKg is required': uiLabels.weightKgRequired,
     'weightKg is invalid': uiLabels.weightKgInvalid
   };
@@ -1075,6 +1082,7 @@ function applyShipmentOptions(data) {
 
   shipmentOptions = {
     units: data.units || [],
+    hubs: data.hubs || [],
     crews: data.crews || [],
     methods: data.methods || [],
     destinations: data.destinations || []
@@ -1394,6 +1402,10 @@ function getDashboardValues(key) {
     return shipmentOptions.units;
   }
 
+  if (key === 'hub') {
+    return shipmentOptions.hubs;
+  }
+
   if (key === 'crew') {
     return shipmentOptions.crews;
   }
@@ -1425,6 +1437,10 @@ function getDashboardFilterLabel(key) {
 
   if (key === 'destination') {
     return uiLabels.destination;
+  }
+
+  if (key === 'hub') {
+    return uiLabels.hub;
   }
 
   if (key === 'crew') {
@@ -2454,6 +2470,10 @@ function renderDetailsView(item) {
     <div>
       <b>Створення:</b> ${escapeHtml(item.createdAt)}
     </div>
+
+    <div>
+      <b>${escapeHtml(uiLabels.hub)}:</b> ${escapeHtml(item.hub || 'Не вказано')}
+    </div>
   
     <div>
       <b>${escapeHtml(uiLabels.crew)}:</b> ${escapeHtml(item.crew || 'Не вказано')}
@@ -2535,6 +2555,20 @@ function renderEditForm(item) {
           )}
         </select>
       </div>
+
+      <label class="edit-select-field">
+        <span>${escapeHtml(uiLabels.hub)}</span>
+
+        <div class="select-wrap">
+          <select class="edit-hub">
+            ${buildOptionalOptions(
+              shipmentOptions.hubs,
+              item.hub,
+              'Не вказано'
+            )}
+          </select>
+        </div>
+      </label>
 
       <label class="edit-select-field">
         <span>${escapeHtml(uiLabels.crew)}</span>
@@ -2658,6 +2692,7 @@ function getEditData(details) {
   return {
     unit: details.querySelector('.edit-unit').value.trim(),
     destination: details.querySelector('.edit-destination').value.trim(),
+    hub: details.querySelector('.edit-hub').value.trim(),
     method: details.querySelector('.edit-method').value.trim(),
     sentDate,
     sentTime,
@@ -2676,6 +2711,7 @@ function getItemEditData(item) {
   return {
     unit: String(item.unit || '').trim(),
     destination: String(item.destination || '').trim(),
+    hub: String(item.hub || '').trim(),
     method: String(item.method || '').trim(),
     sentDate: formatDatePartInput(item.sentAtRaw),
     sentTime: formatTimePartInput(item.sentAtRaw),
@@ -2737,6 +2773,15 @@ function validateEditData(data) {
   }
 
   if (
+    data.hub &&
+    !validateLength(data.hub, 2, 40)
+  ) {
+    showToast(uiLabels.hubLength);
+
+    return false;
+  }
+
+  if (
     data.method &&
     !validateLength(data.method, 2, 40)
   ) {
@@ -2782,6 +2827,14 @@ function validateEditData(data) {
 
   if (!DELIVERY_PRIORITIES.includes(data.deliveryPriority)) {
     showToast(uiLabels.deliveryPriorityInvalid);
+    return false;
+  }
+
+  if (
+    data.status !== DEFAULT_SHIPMENT_STATUS &&
+    !data.hub
+  ) {
+    showToast(uiLabels.hubRequired);
     return false;
   }
 
