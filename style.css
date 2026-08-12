@@ -50,6 +50,10 @@ select {
   color: #4f8f91;
 }
 
+.status-hub {
+  color: #7665a7;
+}
+
 .status-warning {
   color: #b58b3a;
 }
@@ -234,6 +238,10 @@ button {
 }
 
 .card-status-delivered {
+  background: white;
+}
+
+.card-status-hub {
   background: white;
 }
 
@@ -556,6 +564,11 @@ textarea:focus {
 .card-status-badge-new {
   background: #eadb82;
   border-color: #d6c467;
+}
+
+.card-status-badge-hub {
+  background: #c8bde6;
+  border-color: #aa9bd2;
 }
 
 .card-status-badge-partial {
@@ -1395,6 +1408,10 @@ textarea:focus {
 
 .dashboard-bar-fill.status-delivered {
   background: #6fb7ba;
+}
+
+.dashboard-bar-fill.status-hub {
+  background: #9c8fd0;
 }
 
 .dashboard-bar-fill.status-warning {
