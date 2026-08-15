@@ -16,6 +16,29 @@ function isValidShipmentWeight(value) {
          number <= 1000000;
 }
 
+function sanitizeShipmentWeightInput(value) {
+  let hasDot = false;
+
+  return String(value || '')
+    .split('')
+    .filter(char => {
+      if (/\d/.test(char)) {
+        return true;
+      }
+
+      if (
+        char === '.' &&
+        !hasDot
+      ) {
+        hasDot = true;
+        return true;
+      }
+
+      return false;
+    })
+    .join('');
+}
+
 function getRequestErrorMessage(defaultMessage) {
 
   if (!navigator.onLine) {
