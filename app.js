@@ -944,6 +944,21 @@ function canEditShipment(item) {
   return Boolean(currentUser);
 }
 
+function bindShipmentWeightInput(input) {
+  if (!input) {
+    return;
+  }
+
+  input.addEventListener('input', () => {
+    const sanitized =
+      sanitizeShipmentWeightInput(input.value);
+
+    if (input.value !== sanitized) {
+      input.value = sanitized;
+    }
+  });
+}
+
 function buildOptions(options, selectedValue) {
 
   const values = [...options];
@@ -2733,6 +2748,10 @@ function getItemEditData(item) {
 
 function setupEditChangeTracking(item, details) {
 
+  bindShipmentWeightInput(
+    details.querySelector('.edit-weight-kg')
+  );
+
   const initialData = JSON.stringify(
     getItemEditData(item)
   );
@@ -3481,6 +3500,10 @@ function renderIncrementalShipmentDeletions(deletedIds) {
 
 document.getElementById('createBtn')
   .addEventListener('click', createShipment);
+
+bindShipmentWeightInput(
+  document.getElementById('weightKg')
+);
 
 document
   .getElementById('twoFactorSubmitBtn')
