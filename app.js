@@ -92,6 +92,9 @@ const DASHBOARD_FILTERS = [
     key: 'unit'
   },
   {
+    key: 'hub'
+  },
+  {
     key: 'crew'
   },
   {
@@ -1040,6 +1043,9 @@ function applyUiLabels() {
   const dashboardUnitOption =
     dashboardGroupBy.querySelector('option[value="unit"]');
 
+  const dashboardHubOption =
+    dashboardGroupBy.querySelector('option[value="hub"]');
+
   const dashboardCrewOption =
     dashboardGroupBy.querySelector('option[value="crew"]');
 
@@ -1051,6 +1057,10 @@ function applyUiLabels() {
 
   if (dashboardUnitOption) {
     dashboardUnitOption.innerText = uiLabels.unit;
+  }
+
+  if (dashboardHubOption) {
+    dashboardHubOption.innerText = uiLabels.hub;
   }
 
   if (dashboardCrewOption) {
