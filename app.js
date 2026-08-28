@@ -2223,11 +2223,37 @@ function getDashboardBreakdown(items) {
     });
 }
 
+function getShipmentWeightValue(item) {
+  const value = Number(
+    String(item && item.weightKg || '').trim()
+  );
+
+  return Number.isFinite(value)
+    ? value
+    : 0;
+}
+
+function getTotalShipmentWeight(items) {
+  return items.reduce((total, item) => {
+    return total + getShipmentWeightValue(item);
+  }, 0);
+}
+
+function formatShipmentWeightTotal(value) {
+  return new Intl.NumberFormat(
+    'uk-UA',
+    {
+      maximumFractionDigits: 2
+    }
+  ).format(value);
+}
+
 function renderDashboardChart(items) {
 
   const breakdown = getDashboardBreakdown(items);
   const groupKey = dashboardGroupBy.value;
   const total = items.length;
+  const totalWeight = getTotalShipmentWeight(items);
   const shouldShowZeroValues =
     dashboardShowZeroValues.checked;
   const shouldScrollBars =
@@ -2257,6 +2283,9 @@ function renderDashboardChart(items) {
       aria-label="Показати всі замовлення з дашборду"
     >
       <span>${total}</span>
+      <span class="dashboard-total-weight">
+        (${escapeHtml(formatShipmentWeightTotal(totalWeight))} кг)
+      </span>
       <small>
         заявок, групування: ${escapeHtml(
           getDashboardFilterLabel(groupKey).toLowerCase()
