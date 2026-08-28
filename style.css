@@ -1300,6 +1300,12 @@ textarea:focus {
   line-height: 1;
 }
 
+.dashboard-total .dashboard-total-weight {
+  font-size: 17px;
+  font-weight: 700;
+  color: #777;
+}
+
 .dashboard-total small {
   font-size: 13px;
   font-weight: 500;
@@ -2545,6 +2551,10 @@ html {
 
   .dashboard-total span {
     font-size: 27px;
+  }
+
+  .dashboard-total .dashboard-total-weight {
+    font-size: 13px;
   }
 
   .dashboard-total small {
