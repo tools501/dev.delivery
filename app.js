@@ -121,6 +121,9 @@ const toggleFormIcon =
 const loadBtn =
   document.getElementById('loadBtn');
 
+document.getElementById('loginVersion')
+  .innerText = `v${APP_VERSION}`;
+
 const shipmentSearchToggle =
   document.getElementById('shipmentSearchToggle');
 
@@ -673,10 +676,7 @@ async function authenticateWithToken(
   startSessionTimer(authToken);
 
   document.getElementById('userInfo')
-    .innerHTML = `
-      <div>${escapeHtml(currentUser.name)}</div>
-      <div class="user-app-version">Delivery v${escapeHtml(APP_VERSION)}</div>
-    `;
+    .innerText = currentUser.name;
 
   try {
     applyShipmentOptions(result.data.options);
