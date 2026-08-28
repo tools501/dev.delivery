@@ -1301,9 +1301,9 @@ textarea:focus {
 }
 
 .dashboard-total .dashboard-total-weight {
-  font-size: 17px;
-  font-weight: 700;
-  color: #777;
+  font-size: 14px;
+  font-weight: 650;
+  color: #858585;
 }
 
 .dashboard-total small {
@@ -2554,7 +2554,7 @@ html {
   }
 
   .dashboard-total .dashboard-total-weight {
-    font-size: 13px;
+    font-size: 11px;
   }
 
   .dashboard-total small {
