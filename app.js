@@ -2243,7 +2243,7 @@ function formatShipmentWeightTotal(value) {
   return new Intl.NumberFormat(
     'uk-UA',
     {
-      maximumFractionDigits: 2
+      maximumFractionDigits: 0
     }
   ).format(value);
 }
