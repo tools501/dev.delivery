@@ -738,9 +738,7 @@ async function authenticateWithToken(
     return false;
   }
 
-  if (options.persist) {
-    setSharedAuthToken(token);
-  }
+  setSharedAuthToken(token);
 
   currentUser = result.data.user;
 
