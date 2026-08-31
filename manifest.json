@@ -1,10 +1,10 @@
 {
   "id": "/delivery/",
-  "name": "Delivery",
+  "name": "Delivery.dev",
   "short_name": "Delivery",
   "description": "Delivery internal orders app",
-  "start_url": "/delivery/",
-  "scope": "/delivery/",
+  "start_url": "/dev.delivery/",
+  "scope": "/dev.delivery/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f4f4f4",
