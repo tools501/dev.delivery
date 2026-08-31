@@ -464,6 +464,9 @@ function showTwoFactorScreen(token, options) {
   document.getElementById('loader')
     .classList.add('hidden');
 
+  document.getElementById('authCheckingBlock')
+    .classList.add('hidden');
+
   document.getElementById('loginBlock')
     .classList.add('hidden');
 
@@ -518,6 +521,12 @@ async function ensureTwoFactorAccess(token, options) {
 
   showTwoFactorScreen(token, options);
   return false;
+}
+
+function hideAuthCheckingScreen() {
+
+  document.getElementById('authCheckingBlock')
+    .classList.add('hidden');
 }
 
 async function submitTwoFactorCode() {
@@ -596,6 +605,8 @@ async function authenticateWithToken(
 
   authToken = token;
 
+  hideAuthCheckingScreen();
+
   document.getElementById('loginBlock')
     .classList.add('hidden');
 
@@ -615,7 +626,7 @@ async function authenticateWithToken(
       );
 
       if (!canContinue) {
-        return;
+        return false;
       }
     }
   } catch (e) {
@@ -632,7 +643,7 @@ async function authenticateWithToken(
       getRequestErrorMessage('Не вдалося перевірити 2FA')
     );
 
-    return;
+    return false;
   }
 
   let result;
@@ -650,7 +661,7 @@ async function authenticateWithToken(
 
     showLoginScreen();
 
-    return;
+    return false;
   }
 
   if (!result.success) {
@@ -664,7 +675,7 @@ async function authenticateWithToken(
     document.getElementById('deniedScreen')
       .classList.remove('hidden');
 
-    return;
+    return false;
   }
 
   if (options.persist) {
@@ -698,6 +709,8 @@ async function authenticateWithToken(
 
   document.getElementById('app')
     .classList.remove('hidden');
+
+  return true;
 }
 
 async function trySharedSession() {
@@ -705,10 +718,25 @@ async function trySharedSession() {
   const token = getSharedAuthToken();
 
   if (!token) {
-    return;
+    return false;
   }
 
-  await authenticateWithToken(token);
+  return authenticateWithToken(token);
+}
+
+async function initializeAuth() {
+
+  const restored = await trySharedSession();
+
+  if (
+    !restored &&
+    !pendingTwoFactorAuth &&
+    !currentUser &&
+    document.getElementById('deniedScreen')
+      .classList.contains('hidden')
+  ) {
+    showLoginScreen();
+  }
 }
 
 async function api(
@@ -769,6 +797,7 @@ function showLoginScreen() {
     .classList.add('hidden');
 
   hideTwoFactorScreen();
+  hideAuthCheckingScreen();
 
   document.getElementById('loader')
     .classList.add('hidden');
@@ -3500,4 +3529,4 @@ document
     renewSession();
   });
 
-trySharedSession();
+initializeAuth();
