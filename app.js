@@ -84,6 +84,7 @@ const DELIVERY_PRIORITIES = [
 ];
 const DASHBOARD_ALL_VALUE = 'Всі';
 const API_TIMEOUT_MS = 30 * 1000;
+const TOKEN_EXPIRY_SAFETY_MS = 2 * 60 * 1000;
 
 const DASHBOARD_FILTERS = [
   {
@@ -286,11 +287,29 @@ function getTokenExpirationMs(token) {
   }
 }
 
+function getSafeTokenExpirationMs(token) {
+
+  const expirationMs = getTokenExpirationMs(token);
+
+  if (!expirationMs) {
+    return 0;
+  }
+
+  return expirationMs - TOKEN_EXPIRY_SAFETY_MS;
+}
+
+function isTokenActive(token) {
+
+  return getSafeTokenExpirationMs(token) > Date.now();
+}
+
 function expireSession() {
 
   sessionExpired = true;
+  authToken = null;
   clearInterval(sessionCountdownTimer);
   stopVersionTimer();
+  clearSharedAuthToken();
 
   document
     .getElementById('sessionExpired')
@@ -319,7 +338,7 @@ function startSessionTimer(token) {
 
   sessionExpired = false;
   sessionExpiresAt =
-    getTokenExpirationMs(token) ||
+    getSafeTokenExpirationMs(token) ||
     Date.now() + 55 * 60 * 1000;
 
   document
@@ -392,14 +411,40 @@ async function handleCredentialResponse(response) {
 
 function getSharedAuthToken() {
 
+  let token = null;
+
   try {
-    return sessionStorage.getItem(SHARED_AUTH_TOKEN_KEY);
+    token = localStorage.getItem(SHARED_AUTH_TOKEN_KEY);
   } catch (e) {
+    console.error(e);
+  }
+
+  if (!token) {
+    try {
+      token = sessionStorage.getItem(SHARED_AUTH_TOKEN_KEY);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  if (
+    token &&
+    !isTokenActive(token)
+  ) {
+    clearSharedAuthToken();
     return null;
   }
+
+  return token;
 }
 
 function setSharedAuthToken(token) {
+
+  try {
+    localStorage.setItem(SHARED_AUTH_TOKEN_KEY, token);
+  } catch (e) {
+    console.error(e);
+  }
 
   try {
     sessionStorage.setItem(SHARED_AUTH_TOKEN_KEY, token);
@@ -409,6 +454,12 @@ function setSharedAuthToken(token) {
 }
 
 function clearSharedAuthToken() {
+
+  try {
+    localStorage.removeItem(SHARED_AUTH_TOKEN_KEY);
+  } catch (e) {
+    console.error(e);
+  }
 
   try {
     sessionStorage.removeItem(SHARED_AUTH_TOKEN_KEY);
@@ -603,6 +654,15 @@ async function authenticateWithToken(
   options = {}
 ) {
 
+  if (!isTokenActive(token)) {
+    authToken = null;
+    clearSharedAuthToken();
+    hideAuthCheckingScreen();
+    showLoginScreen();
+
+    return false;
+  }
+
   authToken = token;
 
   hideAuthCheckingScreen();
@@ -778,6 +838,9 @@ async function api(
     !result.success &&
     result.error === 'AUTH_REQUIRED'
   ) {
+
+    authToken = null;
+    clearSharedAuthToken();
 
     document
       .getElementById('sessionExpired')
