@@ -16,10 +16,15 @@ function isValidShipmentWeight(value) {
          number <= 1000000;
 }
 
+function normalizeShipmentWeightInput(value) {
+  return String(value || '')
+    .replace(/,/g, '.');
+}
+
 function sanitizeShipmentWeightInput(value) {
   let hasDot = false;
 
-  return String(value || '')
+  return normalizeShipmentWeightInput(value)
     .split('')
     .filter(char => {
       if (/\d/.test(char)) {
