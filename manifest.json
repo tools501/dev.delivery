@@ -1,7 +1,7 @@
 {
   "id": "/dev.delivery/",
   "name": "Delivery.dev",
-  "short_name": "Delivery",
+  "short_name": "Delivery.dev",
   "description": "Delivery internal orders app",
   "start_url": "/dev.delivery/",
   "scope": "/dev.delivery/",
