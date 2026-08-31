@@ -2,7 +2,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwI9PjMLd8zEZ671MHvRwUu
 const HUB_API_URL = 'https://script.google.com/macros/s/AKfycbyAHpUfM1RrPJbamCVcc5rGhUgRKoLRKSULBGnCNGLyCSaFU5lp7SX2Ge1Wwv9YEV5-Sg/exec';
 const SHARED_AUTH_TOKEN_KEY = 'tools501_google_id_token';
 const HUB_URL = '/hub/';
-const APP_VERSION = '1.1.1';
+const APP_VERSION = '1.2.0';
 
 let authToken = null;
 let currentUser = null;
