@@ -1179,7 +1179,9 @@ async function createShipment() {
 
   const unit = document.getElementById('unit').value.trim();
   const destination = document.getElementById('destination').value.trim();
-  const weightKg = document.getElementById('weightKg').value.trim();
+  const weightInput = document.getElementById('weightKg');
+  const weightKg =
+    sanitizeShipmentWeightInput(weightInput.value).trim();
   const comment = document.getElementById('comment').value.trim();
 
   if (!unit) {
@@ -1213,6 +1215,8 @@ async function createShipment() {
     showToast(uiLabels.weightKgInvalid);
     return;
   }
+
+  weightInput.value = weightKg;
 
   if (!comment) {
     showToast(uiLabels.commentRequired);
@@ -2537,7 +2541,9 @@ function getEditData(details) {
     crew: details.querySelector('.edit-crew').value.trim(),
     deliveryPriority:
       details.querySelector('.edit-delivery-priority').value,
-    weightKg: details.querySelector('.edit-weight-kg').value.trim(),
+    weightKg: sanitizeShipmentWeightInput(
+      details.querySelector('.edit-weight-kg').value
+    ).trim(),
     status: details.querySelector('.edit-status').value,
     comment: details.querySelector('.edit-comment').value.trim()
   };
