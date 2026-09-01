@@ -3,6 +3,7 @@ const HUB_API_URL = 'https://script.google.com/macros/s/AKfycbyAHpUfM1RrPJbamCVc
 const SHARED_AUTH_TOKEN_KEY = 'tools501_google_id_token';
 const HUB_URL = '/hub/';
 const APP_VERSION = '1.2.0';
+const TWO_FACTOR_CHECK_ENABLED = false;
 
 let authToken = null;
 let currentUser = null;
@@ -679,7 +680,10 @@ async function authenticateWithToken(
   hideTwoFactorScreen();
 
   try {
-    if (!options.skipTwoFactor) {
+    if (
+      TWO_FACTOR_CHECK_ENABLED &&
+      !options.skipTwoFactor
+    ) {
       const canContinue = await ensureTwoFactorAccess(
         token,
         options
@@ -710,6 +714,18 @@ async function authenticateWithToken(
 
   try {
     result = await api('bootstrap');
+
+    if (
+      result &&
+      result.success &&
+      result.data &&
+      result.data.timing
+    ) {
+      console.info(
+        '[Delivery bootstrap timing]',
+        result.data.timing
+      );
+    }
   } catch (e) {
     console.error(e);
 
