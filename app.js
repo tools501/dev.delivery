@@ -784,7 +784,33 @@ async function authenticateWithToken(
   document.getElementById('app')
     .classList.remove('hidden');
 
+  logAuthStatsInBackground();
+
   return true;
+}
+
+function logAuthStatsInBackground() {
+
+  api('logAuthStats')
+    .then(result => {
+      if (
+        result &&
+        result.success &&
+        result.data &&
+        result.data.timing
+      ) {
+        console.info(
+          '[Delivery auth stats timing]',
+          result.data.timing
+        );
+      }
+    })
+    .catch(e => {
+      console.warn(
+        '[Delivery auth stats failed]',
+        e
+      );
+    });
 }
 
 async function trySharedSession() {
