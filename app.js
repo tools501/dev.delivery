@@ -327,7 +327,7 @@ function renewSession() {
   stopVersionTimer();
   clearSharedAuthToken();
 
-  window.location.href = HUB_URL;
+  showLoginScreen();
 }
 
 function startSessionTimer(token) {
@@ -867,6 +867,9 @@ function showLoginScreen() {
     .classList.add('hidden');
 
   document.getElementById('sessionExpired')
+    .classList.add('hidden');
+
+  document.getElementById('sessionWarning')
     .classList.add('hidden');
 
   document.getElementById('loginBlock')
