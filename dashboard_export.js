@@ -1,3 +1,58 @@
+const DASHBOARD_EXPORT_COLUMNS = [
+  {
+    key: 'id',
+    labelKey: 'id'
+  },
+  {
+    key: 'createdAt',
+    labelKey: 'createdAt'
+  },
+  {
+    key: 'destination',
+    labelKey: 'destination'
+  },
+  {
+    key: 'hub',
+    labelKey: 'hub'
+  },
+  {
+    key: 'unit',
+    labelKey: 'unit'
+  },
+  {
+    key: 'crew',
+    labelKey: 'crew'
+  },
+  {
+    key: 'method',
+    labelKey: 'method'
+  },
+  {
+    key: 'sentAt',
+    labelKey: 'sentAt'
+  },
+  {
+    key: 'status',
+    labelKey: 'status'
+  },
+  {
+    key: 'comment',
+    labelKey: 'comment'
+  },
+  {
+    key: 'weightKg',
+    labelKey: 'weightKg'
+  },
+  {
+    key: 'name',
+    labelKey: 'createdByName'
+  },
+  {
+    key: 'updatedBy',
+    labelKey: 'updatedByName'
+  }
+];
+
 function formatDashboardExportDate(value) {
 
   if (!value) {
@@ -17,158 +72,166 @@ function formatDashboardExportDate(value) {
   }).format(date);
 }
 
-function buildDashboardExportRows(items, breakdown) {
+function getDashboardExportFileName() {
 
-  const groupLabel =
-    getDashboardFilterLabel(dashboardGroupBy.value);
-  const period =
-    `${formatDashboardExportDate(dashboardFrom.value)} - ${formatDashboardExportDate(dashboardTo.value)}`;
+  const from = formatDashboardExportDate(dashboardFrom.value);
+  const to = formatDashboardExportDate(dashboardTo.value);
+
+  return `delivery_export_${from}_${to}.xlsx`;
+}
+
+function getDashboardExportShipments() {
+
+  const fromDate = new Date(`${dashboardFrom.value}T00:00:00`);
+  const toDate = new Date(`${dashboardTo.value}T23:59:59`);
+
+  if (
+    isNaN(fromDate.getTime()) ||
+    isNaN(toDate.getTime()) ||
+    fromDate > toDate
+  ) {
+    showToast('Перевірте період статистики');
+    return null;
+  }
+
+  return allShipments
+    .filter(item => {
+      return isShipmentInDashboardPeriod(
+        item,
+        fromDate,
+        toDate
+      );
+    })
+    .sort((a, b) => {
+      return new Date(b.createdAtRaw) -
+             new Date(a.createdAtRaw);
+    });
+}
+
+function getDashboardExportCellValue(item, key) {
+
+  if (key === 'weightKg') {
+    const value = Number(
+      String(item.weightKg || '').trim()
+    );
+
+    return Number.isFinite(value)
+      ? value
+      : '';
+  }
+
+  if (key === 'sentAt') {
+    return item.sentAt || '';
+  }
+
+  return item[key] || '';
+}
+
+function buildDashboardExportRows(items) {
 
   return [
-    ['Період', period],
-    [],
-    [groupLabel, 'Кількість'],
-    ...breakdown.map(item => [
-      item.label,
-      item.count
-    ]),
-    [],
-    ['Всього', items.length]
+    DASHBOARD_EXPORT_COLUMNS.map(column => {
+      return uiLabels[column.labelKey] || column.key;
+    }),
+    ...items.map(item => {
+      return DASHBOARD_EXPORT_COLUMNS.map(column => {
+        return getDashboardExportCellValue(
+          item,
+          column.key
+        );
+      });
+    })
   ];
 }
 
 function applyDashboardExportStyles(
   worksheet,
-  breakdownLength
+  rowCount
 ) {
 
+  const columnCount = DASHBOARD_EXPORT_COLUMNS.length;
+  const rangeRef = XLSX.utils.encode_range({
+    s: {
+      r: 0,
+      c: 0
+    },
+    e: {
+      r: Math.max(0, rowCount - 1),
+      c: columnCount - 1
+    }
+  });
   const border = {
     top: {
       style: 'thin',
       color: {
-        rgb: '000000'
+        rgb: 'D9D9D9'
       }
     },
     right: {
       style: 'thin',
       color: {
-        rgb: '000000'
+        rgb: 'D9D9D9'
       }
     },
     bottom: {
       style: 'thin',
       color: {
-        rgb: '000000'
+        rgb: 'D9D9D9'
       }
     },
     left: {
       style: 'thin',
       color: {
-        rgb: '000000'
+        rgb: 'D9D9D9'
       }
     }
   };
-  const headerFill = {
-    patternType: 'solid',
-    fgColor: {
-      rgb: 'D9D9D9'
-    }
+  const headerStyle = {
+    font: {
+      bold: true
+    },
+    fill: {
+      patternType: 'solid',
+      fgColor: {
+        rgb: 'EDEDED'
+      }
+    },
+    border
   };
-  const headerFont = {
-    bold: true
+
+  worksheet['!autofilter'] = {
+    ref: rangeRef
   };
-  const tableHeaderRow = 3;
-  const tableLastRow =
-    tableHeaderRow + breakdownLength;
-  const totalRow =
-    tableLastRow + 2;
 
-  function styleCell(
-    row,
-    column,
-    style
-  ) {
-
+  for (let column = 0; column < columnCount; column++) {
     const address = XLSX.utils.encode_cell({
-      r: row - 1,
-      c: column - 1
+      r: 0,
+      c: column
     });
 
-    if (!worksheet[address]) {
-      worksheet[address] = {
-        t: 's',
-        v: ''
+    worksheet[address].s = headerStyle;
+  }
+
+  for (let row = 1; row < rowCount; row++) {
+    for (let column = 0; column < columnCount; column++) {
+      const address = XLSX.utils.encode_cell({
+        r: row,
+        c: column
+      });
+
+      if (!worksheet[address]) {
+        continue;
+      }
+
+      worksheet[address].s = {
+        border,
+        alignment: {
+          vertical: 'top',
+          wrapText: true
+        }
       };
     }
-
-    worksheet[address].s = {
-      ...(worksheet[address].s || {}),
-      ...style
-    };
   }
-
-  function styleRange(
-    startRow,
-    endRow,
-    style
-  ) {
-
-    for (let row = startRow; row <= endRow; row++) {
-      styleCell(row, 1, style);
-      styleCell(row, 2, style);
-    }
-  }
-
-  styleRange(1, 1, {
-    border
-  });
-
-  styleRange(tableHeaderRow, tableLastRow, {
-    border
-  });
-
-  styleRange(totalRow, totalRow, {
-    border,
-    fill: headerFill,
-    font: headerFont
-  });
-
-  styleRange(tableHeaderRow, tableHeaderRow, {
-    border,
-    fill: headerFill,
-    font: headerFont
-  });
-
-  for (let row = tableHeaderRow + 1; row <= tableLastRow; row++) {
-    styleCell(row, 2, {
-      alignment: {
-        horizontal: 'right'
-      }
-    });
-  }
-
-  styleCell(totalRow, 2, {
-    alignment: {
-      horizontal: 'right'
-    },
-    border,
-    fill: headerFill,
-    font: headerFont
-  });
-}
-
-function getDashboardExportFileName() {
-
-  const date = new Date();
-  const stamp = [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, '0'),
-    String(date.getDate()).padStart(2, '0'),
-    String(date.getHours()).padStart(2, '0'),
-    String(date.getMinutes()).padStart(2, '0')
-  ].join('');
-
-  return `delivery-${stamp}.xlsx`;
 }
 
 function exportDashboardToExcel() {
@@ -178,27 +241,56 @@ function exportDashboardToExcel() {
     return;
   }
 
-  const items = filterDashboardShipments();
+  const items = getDashboardExportShipments();
 
   if (!items) {
     return;
   }
 
-  const breakdown = getDashboardBreakdown(items);
-  const rows = buildDashboardExportRows(
-    items,
-    breakdown
-  );
+  const rows = buildDashboardExportRows(items);
   const worksheet = XLSX.utils.aoa_to_sheet(rows);
 
   applyDashboardExportStyles(
     worksheet,
-    breakdown.length
+    rows.length
   );
 
   worksheet['!cols'] = [
     {
+      wch: 18
+    },
+    {
+      wch: 18
+    },
+    {
       wch: 28
+    },
+    {
+      wch: 16
+    },
+    {
+      wch: 18
+    },
+    {
+      wch: 16
+    },
+    {
+      wch: 20
+    },
+    {
+      wch: 18
+    },
+    {
+      wch: 18
+    },
+    {
+      wch: 42
+    },
+    {
+      wch: 18
+    },
+    {
+      wch: 22
     },
     {
       wch: 22
@@ -210,7 +302,7 @@ function exportDashboardToExcel() {
   XLSX.utils.book_append_sheet(
     workbook,
     worksheet,
-    'Статистика'
+    uiLabels.shipmentsTitle || 'data'
   );
 
   XLSX.writeFile(
