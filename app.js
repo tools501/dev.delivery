@@ -31,14 +31,20 @@ let shipmentOptions = {
 };
 
 const REQUIRED_UI_LABEL_KEYS = [
+  'id',
+  'createdAt',
   'unit',
   'destination',
   'hub',
   'method',
   'crew',
+  'sentAt',
+  'status',
   'deliveryPriority',
   'weightKg',
   'comment',
+  'createdByName',
+  'updatedByName',
   'createRequest',
   'shipmentsTitle',
   'chooseUnit',
