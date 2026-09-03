@@ -47,6 +47,15 @@ const REQUIRED_UI_LABEL_KEYS = [
   'updatedByName',
   'createRequest',
   'shipmentsTitle',
+  'dashboardTitle',
+  'dashboardBuilderTitle',
+  'searchByDestination',
+  'searchByDestinationAria',
+  'deleteShipmentTitle',
+  'deleteShipmentReasonTitle',
+  'deleteShipmentReasonText',
+  'deleteShipmentReasonPlaceholder',
+  'deleteShipmentSubmit',
   'chooseUnit',
   'chooseDestination',
   'chooseHub',
@@ -1180,6 +1189,38 @@ function applyUiLabels() {
 
   document.querySelector('.shipments-title').innerText =
     uiLabels.shipmentsTitle;
+
+  document.querySelector('.dashboard-title').innerText =
+    uiLabels.dashboardTitle;
+
+  document.querySelector('.dashboard-subtitle').innerText =
+    uiLabels.dashboardBuilderTitle;
+
+  shipmentSearchToggle.setAttribute(
+    'aria-label',
+    uiLabels.searchByDestinationAria
+  );
+
+  shipmentSearchInput.placeholder =
+    uiLabels.searchByDestination;
+
+  document.querySelector(
+    '#deleteModalConfirmStep .delete-modal-title'
+  ).innerText = uiLabels.deleteShipmentTitle;
+
+  document.querySelector(
+    '#deleteModalReasonStep .delete-modal-title'
+  ).innerText = uiLabels.deleteShipmentReasonTitle;
+
+  document.querySelector(
+    '#deleteModalReasonStep .delete-modal-text'
+  ).innerText = uiLabels.deleteShipmentReasonText;
+
+  deleteReasonInput.placeholder =
+    uiLabels.deleteShipmentReasonPlaceholder;
+
+  deleteModalSubmitBtn.innerText =
+    uiLabels.deleteShipmentSubmit;
 
   if (!formOpened) {
     toggleFormText.innerText = uiLabels.createRequest;
