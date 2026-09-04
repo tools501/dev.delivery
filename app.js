@@ -80,6 +80,7 @@ const REQUIRED_UI_LABEL_KEYS = [
   'deliveryTimeAria',
   'deliveryTimeRequired',
   'deliveryDateRequired',
+  'sentAtRequiredForStatus',
   'updateConflict',
   'shipmentAlreadyDeleted',
   'editForbidden',
@@ -131,6 +132,12 @@ const HUB_SHIPMENT_STATUS = 'На хабі';
 const DELETABLE_SHIPMENT_STATUSES = [
   DEFAULT_SHIPMENT_STATUS,
   HUB_SHIPMENT_STATUS
+];
+const SENT_AT_REQUIRED_STATUSES = [
+  'Доставлено',
+  'Отримано',
+  'Частково отримано',
+  'Неотримано'
 ];
 const DEFAULT_DELIVERY_PRIORITY = 'Стандартний';
 const DELIVERY_PRIORITIES = [
@@ -1099,6 +1106,7 @@ function getShipmentValidationErrorMessage(error) {
     FORBIDDEN_PRIORITY: uiLabels.deliveryPriorityForbidden,
     'hub is required': uiLabels.hubRequired,
     'hub length is invalid': uiLabels.hubLength,
+    'sentAt is required': uiLabels.sentAtRequiredForStatus,
     'weightKg is required': uiLabels.weightKgRequired,
     'weightKg is invalid': uiLabels.weightKgInvalid
   };
@@ -2897,6 +2905,14 @@ function validateEditData(data) {
     !data.sentDate
   ) {
     showToast(uiLabels.deliveryDateRequired);
+    return false;
+  }
+
+  if (
+    SENT_AT_REQUIRED_STATUSES.includes(data.status) &&
+    !data.sentDate
+  ) {
+    showToast(uiLabels.sentAtRequiredForStatus);
     return false;
   }
 
