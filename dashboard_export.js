@@ -90,7 +90,7 @@ function getDashboardExportShipments() {
     isNaN(toDate.getTime()) ||
     fromDate > toDate
   ) {
-    showToast('Перевірте період статистики');
+    showToast(uiLabels.dashboardPeriodInvalid);
     return null;
   }
 
@@ -237,7 +237,7 @@ function applyDashboardExportStyles(
 function exportDashboardToExcel() {
 
   if (typeof XLSX === 'undefined') {
-    showToast('Не вдалося завантажити Excel');
+    showToast(uiLabels.exportLoadError);
     return;
   }
 
