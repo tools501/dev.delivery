@@ -45,10 +45,27 @@ const REQUIRED_UI_LABEL_KEYS = [
   'comment',
   'createdByName',
   'updatedByName',
+  'notSpecified',
   'createRequest',
   'shipmentsTitle',
   'dashboardTitle',
   'dashboardBuilderTitle',
+  'dashboardPeriodInvalid',
+  'dashboardEmpty',
+  'dashboardShowAllAria',
+  'dashboardItemsText',
+  'dashboardShowItemAria',
+  'dashboardAllResult',
+  'listFilterPrefix',
+  'searchFoundPrefix',
+  'searchTotalPrefix',
+  'weightUnit',
+  'removeDashboardFilterAria',
+  'emptySearchTitle',
+  'emptyListTitle',
+  'emptySearchText',
+  'emptyDashboardText',
+  'emptyListText',
   'searchByDestination',
   'searchByDestinationAria',
   'deleteShipmentTitle',
@@ -56,6 +73,27 @@ const REQUIRED_UI_LABEL_KEYS = [
   'deleteShipmentReasonText',
   'deleteShipmentReasonPlaceholder',
   'deleteShipmentSubmit',
+  'deleteShipmentAria',
+  'staleEditWarning',
+  'reloadStaleEdit',
+  'deliveryTimeLabel',
+  'deliveryTimeAria',
+  'deliveryTimeRequired',
+  'deliveryDateRequired',
+  'updateConflict',
+  'shipmentAlreadyDeleted',
+  'editForbidden',
+  'saveSuccess',
+  'saveError',
+  'deleteForbidden',
+  'deleteReasonLength',
+  'deleteNotFound',
+  'deletedShipmentsSheetMissing',
+  'deleteOnlyNew',
+  'deleteSuccess',
+  'deleteError',
+  'createError',
+  'exportLoadError',
   'chooseUnit',
   'chooseDestination',
   'chooseHub',
@@ -69,6 +107,7 @@ const REQUIRED_UI_LABEL_KEYS = [
   'methodLength',
   'crewLength',
   'deliveryPriorityInvalid',
+  'deliveryPriorityForbidden',
   'weightKgRequired',
   'weightKgInvalid',
   'commentRequired',
@@ -1057,7 +1096,7 @@ async function syncShipmentChanges() {
 function getShipmentValidationErrorMessage(error) {
   const messages = {
     'deliveryPriority is invalid': uiLabels.deliveryPriorityInvalid,
-    FORBIDDEN_PRIORITY: 'Тільки admin може змінювати пріоритет доставки',
+    FORBIDDEN_PRIORITY: uiLabels.deliveryPriorityForbidden,
     'hub is required': uiLabels.hubRequired,
     'hub length is invalid': uiLabels.hubLength,
     'weightKg is required': uiLabels.weightKgRequired,
@@ -1229,6 +1268,9 @@ function applyUiLabels() {
   const dashboardUnitOption =
     dashboardGroupBy.querySelector('option[value="unit"]');
 
+  const dashboardStatusOption =
+    dashboardGroupBy.querySelector('option[value="status"]');
+
   const dashboardHubOption =
     dashboardGroupBy.querySelector('option[value="hub"]');
 
@@ -1240,6 +1282,10 @@ function applyUiLabels() {
 
   const dashboardDestinationOption =
     dashboardGroupBy.querySelector('option[value="destination"]');
+
+  if (dashboardStatusOption) {
+    dashboardStatusOption.innerText = uiLabels.status;
+  }
 
   if (dashboardUnitOption) {
     dashboardUnitOption.innerText = uiLabels.unit;
@@ -1454,7 +1500,7 @@ async function createShipment() {
 
     showToast(
       getRequestErrorMessage(
-        'Помилка створення замовлення'
+        uiLabels.createError
       )
     );
 
@@ -1667,7 +1713,7 @@ function getDashboardFilterLabel(key) {
   }
 
   if (key === 'status') {
-    return 'Статус';
+    return uiLabels.status;
   }
 
   return key;
@@ -1857,7 +1903,7 @@ function addDashboardFilter(
     <button
       type="button"
       class="dashboard-remove-filter"
-      aria-label="Прибрати параметр"
+      aria-label="${escapeHtml(uiLabels.removeDashboardFilterAria)}"
     >
       ×
     </button>
@@ -1965,7 +2011,7 @@ function filterDashboardShipments() {
     isNaN(toDate.getTime()) ||
     fromDate > toDate
   ) {
-    showToast('Перевірте період статистики');
+    showToast(uiLabels.dashboardPeriodInvalid);
     return null;
   }
 
@@ -1991,7 +2037,7 @@ function getDashboardGroupItems(groupKey, groupValue) {
   }
 
   return filteredItems.filter(item => {
-    return String(item[groupKey] || 'Не вказано') === groupValue;
+    return String(item[groupKey] || uiLabels.notSpecified) === groupValue;
   });
 }
 
@@ -2004,7 +2050,7 @@ function updateListFilterNotice() {
   }
 
   listFilterText.innerText =
-    `Показано за статистикою: ${activeListFilter.label}`;
+    `${uiLabels.listFilterPrefix}: ${activeListFilter.label}`;
 
   listFilterNotice.classList.remove('hidden');
 }
@@ -2055,12 +2101,12 @@ function updateShipmentSearchCount(
 
   if (query) {
     shipmentSearchCount.innerText =
-      `Знайдено: ${visibleCount} з ${totalCount}`;
+      `${uiLabels.searchFoundPrefix}: ${visibleCount} з ${totalCount}`;
     return;
   }
 
   shipmentSearchCount.innerText =
-    `Всього: ${totalCount}`;
+    `${uiLabels.searchTotalPrefix}: ${totalCount}`;
 }
 
 function renderVisibleShipments() {
@@ -2141,7 +2187,7 @@ function applyDashboardTotalListFilter() {
 
   activeListFilter = {
     type: 'dashboardTotal',
-    label: 'увесь результат дашборду'
+    label: uiLabels.dashboardAllResult
   };
 
   renderVisibleShipments();
@@ -2169,7 +2215,7 @@ function getDashboardBreakdown(items) {
     dashboardShowZeroValues.checked;
 
   items.forEach(item => {
-    const value = String(item[groupKey] || 'Не вказано');
+    const value = String(item[groupKey] || uiLabels.notSpecified);
 
     counts[value] = (counts[value] || 0) + 1;
   });
@@ -2239,7 +2285,7 @@ function renderDashboardChart(items) {
   ) {
     return `
       <div class="dashboard-empty">
-        За вибраними параметрами заявок немає
+        ${escapeHtml(uiLabels.dashboardEmpty)}
       </div>
     `;
   }
@@ -2249,14 +2295,14 @@ function renderDashboardChart(items) {
       class="dashboard-total"
       tabindex="0"
       role="button"
-      aria-label="Показати всі замовлення з дашборду"
+      aria-label="${escapeHtml(uiLabels.dashboardShowAllAria)}"
     >
       <span>${total}</span>
       <span class="dashboard-total-weight">
-        (${escapeHtml(formatShipmentWeightTotal(totalWeight))} кг)
+        (${escapeHtml(formatShipmentWeightTotal(totalWeight))} ${escapeHtml(uiLabels.weightUnit)})
       </span>
       <small>
-        заявок, групування: ${escapeHtml(
+        ${escapeHtml(uiLabels.dashboardItemsText)}: ${escapeHtml(
           getDashboardFilterLabel(groupKey).toLowerCase()
         )}
       </small>
@@ -2271,7 +2317,7 @@ function renderDashboardChart(items) {
             data-group-value="${escapeHtml(item.label)}"
             tabindex="0"
             role="button"
-            aria-label="Показати замовлення: ${escapeHtml(item.label)}"
+            aria-label="${escapeHtml(uiLabels.dashboardShowItemAria)}: ${escapeHtml(item.label)}"
           >
             <div class="dashboard-bar-label">
               ${escapeHtml(item.label)}
@@ -2487,27 +2533,27 @@ function renderDetailsView(item) {
     </div>
 
     <div>
-      <b>${escapeHtml(uiLabels.unit)}:</b> ${escapeHtml(item.unit || 'Не вказано')}
+      <b>${escapeHtml(uiLabels.unit)}:</b> ${escapeHtml(item.unit || uiLabels.notSpecified)}
     </div>
 
     <div>
-      <b>Створення:</b> ${escapeHtml(item.createdAt)}
+      <b>${escapeHtml(uiLabels.createdAt)}:</b> ${escapeHtml(item.createdAt)}
     </div>
 
     <div>
-      <b>${escapeHtml(uiLabels.hub)}:</b> ${escapeHtml(item.hub || 'Не вказано')}
+      <b>${escapeHtml(uiLabels.hub)}:</b> ${escapeHtml(item.hub || uiLabels.notSpecified)}
     </div>
   
     <div>
-      <b>${escapeHtml(uiLabels.crew)}:</b> ${escapeHtml(item.crew || 'Не вказано')}
+      <b>${escapeHtml(uiLabels.crew)}:</b> ${escapeHtml(item.crew || uiLabels.notSpecified)}
     </div>
 
     <div>
-      <b>${escapeHtml(uiLabels.method)}:</b> ${escapeHtml(item.method || 'Не вказано')}
+      <b>${escapeHtml(uiLabels.method)}:</b> ${escapeHtml(item.method || uiLabels.notSpecified)}
     </div>
 
     <div>
-      <b>Дата доставки:</b> ${escapeHtml(item.sentAt || 'Не вказано')}
+      <b>${escapeHtml(uiLabels.sentAt)}:</b> ${escapeHtml(item.sentAt || uiLabels.notSpecified)}
     </div>
 
     <div>
@@ -2515,15 +2561,15 @@ function renderDetailsView(item) {
     </div>
   
     <div>
-      <b>Створив замовлення:</b> ${escapeHtml(item.name)}
+      <b>${escapeHtml(uiLabels.createdByName)}:</b> ${escapeHtml(item.name)}
     </div>
 
     <div>
-      <b>Змінив замовлення:</b> ${escapeHtml(item.updatedBy || 'Не вказано')}
+      <b>${escapeHtml(uiLabels.updatedByName)}:</b> ${escapeHtml(item.updatedBy || uiLabels.notSpecified)}
     </div>
   
     <div>
-      <b>Статус:</b>
+      <b>${escapeHtml(uiLabels.status)}:</b>
     
       <span>
         ${escapeHtml(item.status)}
@@ -2537,11 +2583,11 @@ function renderDetailsView(item) {
     <div class="details-comment">
       <b>${escapeHtml(uiLabels.comment)}:</b>
 
-      <div class="details-comment-text">${escapeHtml(item.comment || 'Не вказано')}</div>
+      <div class="details-comment-text">${escapeHtml(item.comment || uiLabels.notSpecified)}</div>
     </div>
 
     <div>
-      <b>${escapeHtml(uiLabels.weightKg)}:</b> ${escapeHtml(item.weightKg || 'Не вказано')}
+      <b>${escapeHtml(uiLabels.weightKg)}:</b> ${escapeHtml(item.weightKg || uiLabels.notSpecified)}
     </div>
 
     ${actionButtons}
@@ -2554,13 +2600,13 @@ function renderEditForm(item) {
     <div class="details-edit-form">
 
       <div class="edit-stale-warning hidden">
-        <span>Заявку змінили в іншому вікні</span>
+        <span>${escapeHtml(uiLabels.staleEditWarning)}</span>
 
         <button
           type="button"
           class="reload-stale-edit-btn"
         >
-          Завантажити актуальні дані
+          ${escapeHtml(uiLabels.reloadStaleEdit)}
         </button>
       </div>
 
@@ -2587,7 +2633,7 @@ function renderEditForm(item) {
             ${buildOptionalOptions(
               shipmentOptions.hubs,
               item.hub,
-              'Не вказано'
+              uiLabels.notSpecified
             )}
           </select>
         </div>
@@ -2601,7 +2647,7 @@ function renderEditForm(item) {
             ${buildOptionalOptions(
               shipmentOptions.crews,
               item.crew,
-              'Не вказано'
+              uiLabels.notSpecified
             )}
           </select>
         </div>
@@ -2615,7 +2661,7 @@ function renderEditForm(item) {
             ${buildOptionalOptions(
               shipmentOptions.methods,
               item.method,
-              'Не вказано'
+              uiLabels.notSpecified
             )}
           </select>
         </div>
@@ -2623,24 +2669,24 @@ function renderEditForm(item) {
 
       <div class="edit-date-time-row">
         <label class="edit-date-time-field">
-          <span>Дата доставки</span>
+          <span>${escapeHtml(uiLabels.sentAt)}</span>
 
           <input
             type="date"
             class="edit-sent-date"
             value="${formatDatePartInput(item.sentAtRaw)}"
-            aria-label="Дата доставки"
+            aria-label="${escapeHtml(uiLabels.sentAt)}"
           >
         </label>
 
         <label class="edit-date-time-field">
-          <span>Час</span>
+          <span>${escapeHtml(uiLabels.deliveryTimeLabel)}</span>
 
           <input
             type="time"
             class="edit-sent-time"
             value="${formatTimePartInput(item.sentAtRaw)}"
-            aria-label="Час доставки"
+            aria-label="${escapeHtml(uiLabels.deliveryTimeAria)}"
           >
         </label>
       </div>
@@ -2842,7 +2888,7 @@ function validateEditData(data) {
     data.sentDate &&
     !data.sentTime
   ) {
-    showToast('Вкажіть час доставки');
+    showToast(uiLabels.deliveryTimeRequired);
     return false;
   }
 
@@ -2850,7 +2896,7 @@ function validateEditData(data) {
     data.sentTime &&
     !data.sentDate
   ) {
-    showToast('Вкажіть дату доставки або очистіть час');
+    showToast(uiLabels.deliveryDateRequired);
     return false;
   }
 
@@ -2920,7 +2966,7 @@ async function saveShipmentEdit(item, details) {
     if (!result.success) {
       if (result.error === 'CONFLICT') {
         showToast(
-          'Заявку вже змінили. Оновлюю список'
+          uiLabels.updateConflict
         );
 
         editingShipmentId = null;
@@ -2929,7 +2975,7 @@ async function saveShipmentEdit(item, details) {
       }
 
       if (result.error === 'NOT_FOUND') {
-        showToast('Замовлення вже видалено');
+        showToast(uiLabels.shipmentAlreadyDeleted);
         editingShipmentId = null;
         applyLocalShipmentDelete(item.id);
         return;
@@ -2939,7 +2985,7 @@ async function saveShipmentEdit(item, details) {
         result.error === 'FORBIDDEN' ||
         result.error === 'FORBIDDEN_STATUS'
       ) {
-        showToast('Недостатньо прав для редагування');
+        showToast(uiLabels.editForbidden);
         editingShipmentId = null;
         await loadShipments();
         return;
@@ -2950,7 +2996,7 @@ async function saveShipmentEdit(item, details) {
     }
 
     editingShipmentId = null;
-    showToast('Зміни збережено', 'success');
+    showToast(uiLabels.saveSuccess, 'success');
 
     if (result.data.shipment) {
       applyIncrementalShipmentChanges([
@@ -2965,7 +3011,7 @@ async function saveShipmentEdit(item, details) {
 
     showToast(
       getRequestErrorMessage(
-        'Помилка збереження замовлення'
+        uiLabels.saveError
       )
     );
 
@@ -2995,7 +3041,7 @@ function closeDeleteShipmentModal() {
 function openDeleteShipmentModal(item) {
 
   if (!canDeleteShipment(item)) {
-    showToast('Недостатньо прав для видалення');
+    showToast(uiLabels.deleteForbidden);
     return;
   }
 
@@ -3003,7 +3049,7 @@ function openDeleteShipmentModal(item) {
 
   deleteModalSummary.innerHTML = `
     <div><b>ID:</b> ${escapeHtml(item.id)}</div>
-    <div><b>${escapeHtml(uiLabels.destination)}:</b> ${escapeHtml(item.destination || 'Не вказано')}</div>
+    <div><b>${escapeHtml(uiLabels.destination)}:</b> ${escapeHtml(item.destination || uiLabels.notSpecified)}</div>
   `;
 
   deleteModalConfirmStep.classList.remove('hidden');
@@ -3031,7 +3077,7 @@ async function submitDeleteShipment() {
     reason.length < 5 ||
     reason.length > 500
   ) {
-    showToast('Причина видалення повинна містити від 5 до 500 символів');
+    showToast(uiLabels.deleteReasonLength);
     return;
   }
 
@@ -3048,29 +3094,29 @@ async function submitDeleteShipment() {
 
     if (!result.success) {
       if (result.error === 'ADMIN_REQUIRED') {
-        showToast('Недостатньо прав для видалення');
+        showToast(uiLabels.deleteForbidden);
         return;
       }
 
       if (result.error === 'deleteReason length is invalid') {
-        showToast('Причина видалення повинна містити від 5 до 500 символів');
+        showToast(uiLabels.deleteReasonLength);
         return;
       }
 
       if (result.error === 'NOT_FOUND') {
-        showToast('Замовлення вже не знайдено. Оновлюю список');
+        showToast(uiLabels.deleteNotFound);
         closeDeleteShipmentModal();
         await loadShipments();
         return;
       }
 
       if (result.error === 'deleted shipments sheet is missing') {
-        showToast('Не знайдено таблицю deleted_shipments');
+        showToast(uiLabels.deletedShipmentsSheetMissing);
         return;
       }
 
       if (result.error === 'DELETE_ONLY_NEW') {
-        showToast('Видаляти можна тільки замовлення зі статусом Нова або На хабі');
+        showToast(uiLabels.deleteOnlyNew);
         return;
       }
 
@@ -3080,7 +3126,7 @@ async function submitDeleteShipment() {
 
     closeDeleteShipmentModal();
     editingShipmentId = null;
-    showToast('Замовлення видалено', 'success');
+    showToast(uiLabels.deleteSuccess, 'success');
     applyLocalShipmentDelete(
       result.data.id,
       result.data.version
@@ -3091,7 +3137,7 @@ async function submitDeleteShipment() {
 
     showToast(
       getRequestErrorMessage(
-        'Помилка видалення замовлення'
+        uiLabels.deleteError
       )
     );
 
@@ -3122,18 +3168,18 @@ function renderShipments(items) {
         <div class="empty-title">
           ${
             hasSearchQuery
-              ? 'Нічого не знайдено'
-              : 'Список порожній'
+              ? uiLabels.emptySearchTitle
+              : uiLabels.emptyListTitle
           }
         </div>
 
         <div class="empty-text">
           ${
             hasSearchQuery
-              ? 'За вашим пошуком замовлень немає'
+              ? uiLabels.emptySearchText
               : activeListFilter
-              ? 'За вибраним результатом заявок немає'
-              : 'У вас ще немає відправок'
+              ? uiLabels.emptyDashboardText
+              : uiLabels.emptyListText
           }
         </div>
 
@@ -3161,8 +3207,8 @@ function createShipmentCard(
       <button
         type="button"
         class="card-delete-btn"
-        aria-label="Видалити замовлення"
-        title="Видалити замовлення"
+        aria-label="${escapeHtml(uiLabels.deleteShipmentAria)}"
+        title="${escapeHtml(uiLabels.deleteShipmentAria)}"
       >
         🗑
       </button>
