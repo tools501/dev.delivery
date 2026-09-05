@@ -1417,7 +1417,7 @@ async function createShipment() {
   const destination = document.getElementById('destination').value.trim();
   const weightInput = document.getElementById('weightKg');
   const weightKg =
-    sanitizeShipmentWeightInput(weightInput.value).trim();
+    normalizeShipmentWeightValue(weightInput.value);
   const comment = document.getElementById('comment').value.trim();
 
   if (!unit) {
@@ -2777,9 +2777,9 @@ function getEditData(details) {
     crew: details.querySelector('.edit-crew').value.trim(),
     deliveryPriority:
       details.querySelector('.edit-delivery-priority').value,
-    weightKg: sanitizeShipmentWeightInput(
+    weightKg: normalizeShipmentWeightValue(
       details.querySelector('.edit-weight-kg').value
-    ).trim(),
+    ),
     status: details.querySelector('.edit-status').value,
     comment: details.querySelector('.edit-comment').value.trim()
   };
