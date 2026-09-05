@@ -44,6 +44,17 @@ function sanitizeShipmentWeightInput(value) {
     .join('');
 }
 
+function normalizeShipmentWeightValue(value) {
+  const sanitized =
+    sanitizeShipmentWeightInput(value).trim();
+
+  if (!isValidShipmentWeight(sanitized)) {
+    return sanitized;
+  }
+
+  return String(Number(sanitized));
+}
+
 function getRequestErrorMessage(defaultMessage) {
 
   if (!navigator.onLine) {
