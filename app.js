@@ -2504,6 +2504,20 @@ function getCardStatusBadgeClass(status) {
   return '';
 }
 
+function renderDetailsValue(value) {
+  const normalized = String(value || '').trim();
+
+  if (!normalized) {
+    return `
+      <span class="details-empty-value">
+        ${escapeHtml(uiLabels.notSpecified)}
+      </span>
+    `;
+  }
+
+  return escapeHtml(normalized);
+}
+
 function renderDetailsView(item) {
 
   const editButton = canEditShipment(item)
@@ -2541,7 +2555,7 @@ function renderDetailsView(item) {
     </div>
 
     <div>
-      <b>${escapeHtml(uiLabels.unit)}:</b> ${escapeHtml(item.unit || uiLabels.notSpecified)}
+      <b>${escapeHtml(uiLabels.unit)}:</b> ${renderDetailsValue(item.unit)}
     </div>
 
     <div>
@@ -2549,19 +2563,19 @@ function renderDetailsView(item) {
     </div>
 
     <div>
-      <b>${escapeHtml(uiLabels.hub)}:</b> ${escapeHtml(item.hub || uiLabels.notSpecified)}
+      <b>${escapeHtml(uiLabels.hub)}:</b> ${renderDetailsValue(item.hub)}
     </div>
   
     <div>
-      <b>${escapeHtml(uiLabels.crew)}:</b> ${escapeHtml(item.crew || uiLabels.notSpecified)}
+      <b>${escapeHtml(uiLabels.crew)}:</b> ${renderDetailsValue(item.crew)}
     </div>
 
     <div>
-      <b>${escapeHtml(uiLabels.method)}:</b> ${escapeHtml(item.method || uiLabels.notSpecified)}
+      <b>${escapeHtml(uiLabels.method)}:</b> ${renderDetailsValue(item.method)}
     </div>
 
     <div>
-      <b>${escapeHtml(uiLabels.sentAt)}:</b> ${escapeHtml(item.sentAt || uiLabels.notSpecified)}
+      <b>${escapeHtml(uiLabels.sentAt)}:</b> ${renderDetailsValue(item.sentAt)}
     </div>
 
     <div>
@@ -2573,7 +2587,7 @@ function renderDetailsView(item) {
     </div>
 
     <div>
-      <b>${escapeHtml(uiLabels.updatedByName)}:</b> ${escapeHtml(item.updatedBy || uiLabels.notSpecified)}
+      <b>${escapeHtml(uiLabels.updatedByName)}:</b> ${renderDetailsValue(item.updatedBy)}
     </div>
   
     <div>
@@ -2591,11 +2605,11 @@ function renderDetailsView(item) {
     <div class="details-comment">
       <b>${escapeHtml(uiLabels.comment)}:</b>
 
-      <div class="details-comment-text">${escapeHtml(item.comment || uiLabels.notSpecified)}</div>
+      <div class="details-comment-text">${renderDetailsValue(item.comment)}</div>
     </div>
 
     <div>
-      <b>${escapeHtml(uiLabels.weightKg)}:</b> ${escapeHtml(item.weightKg || uiLabels.notSpecified)}
+      <b>${escapeHtml(uiLabels.weightKg)}:</b> ${renderDetailsValue(item.weightKg)}
     </div>
 
     ${actionButtons}
