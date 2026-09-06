@@ -52,7 +52,10 @@ function normalizeShipmentWeightValue(value) {
     return sanitized;
   }
 
-  return String(Number(sanitized));
+  const normalized =
+    Math.round((Number(sanitized) + Number.EPSILON) * 100) / 100;
+
+  return String(normalized);
 }
 
 function getRequestErrorMessage(defaultMessage) {
