@@ -344,6 +344,12 @@ textarea:focus {
   overflow-wrap: anywhere;
 }
 
+.details-empty-value {
+  color: #8b8b8b;
+  font-weight: 500;
+  font-style: italic;
+}
+
 .details-edit-form {
   display: flex;
   flex-direction: column;
