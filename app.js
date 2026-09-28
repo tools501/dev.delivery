@@ -27,7 +27,8 @@ let shipmentOptions = {
   hubs: [],
   crews: [],
   methods: [],
-  destinations: []
+  destinations: [],
+  categories: []
 };
 
 const REQUIRED_UI_LABEL_KEYS = [
@@ -42,6 +43,7 @@ const REQUIRED_UI_LABEL_KEYS = [
   'status',
   'deliveryPriority',
   'weightKg',
+  'categories',
   'comment',
   'createdByName',
   'updatedByName',
@@ -111,6 +113,7 @@ const REQUIRED_UI_LABEL_KEYS = [
   'deliveryPriorityForbidden',
   'weightKgRequired',
   'weightKgInvalid',
+  'categoriesRequired',
   'commentRequired',
   'commentLength'
 ];
@@ -1108,7 +1111,9 @@ function getShipmentValidationErrorMessage(error) {
     'hub length is invalid': uiLabels.hubLength,
     'sentAt is required': uiLabels.sentAtRequiredForStatus,
     'weightKg is required': uiLabels.weightKgRequired,
-    'weightKg is invalid': uiLabels.weightKgInvalid
+    'weightKg is invalid': uiLabels.weightKgInvalid,
+    'categories is required': uiLabels.categoriesRequired,
+    'comment length is invalid': uiLabels.commentLength
   };
 
   return messages[error] || error;
@@ -1196,6 +1201,61 @@ function buildOptionalOptions(options, selectedValue, emptyLabel) {
   `;
 }
 
+function parseShipmentCategories(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map(item => String(item || '').trim())
+      .filter(Boolean);
+  }
+
+  return String(value || '')
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function buildCategoryOptions(selectedValue = '') {
+  const selected = parseShipmentCategories(selectedValue);
+  const values = [...shipmentOptions.categories];
+
+  selected.forEach(category => {
+    if (!values.includes(category)) {
+      values.unshift(category);
+    }
+  });
+
+  return values
+    .map(category => {
+      const checked = selected.includes(category)
+        ? 'checked'
+        : '';
+
+      return `
+        <label class="category-option">
+          <input
+            type="checkbox"
+            value="${escapeHtml(category)}"
+            ${checked}
+          >
+
+          <span>${escapeHtml(category)}</span>
+        </label>
+      `;
+    })
+    .join('');
+}
+
+function getSelectedCategories(container) {
+  if (!container) {
+    return [];
+  }
+
+  return Array.from(
+    container.querySelectorAll('input[type="checkbox"]:checked')
+  ).map(input => input.value.trim())
+    .filter(Boolean);
+}
+
 function populateSelect(select, options, placeholder) {
 
   select.innerHTML = `
@@ -1224,6 +1284,9 @@ function validateUiLabels(labels) {
 }
 
 function applyUiLabels() {
+
+  document.getElementById('categoriesLabel').innerText =
+    uiLabels.categories;
 
   document.getElementById('comment').placeholder =
     uiLabels.comment;
@@ -1330,6 +1393,8 @@ function populateCreateOptions() {
     uiLabels.chooseDestination
   );
 
+  document.getElementById('categories').innerHTML =
+    buildCategoryOptions();
 }
 
 async function loadShipmentOptions() {
@@ -1350,7 +1415,8 @@ function applyShipmentOptions(data) {
     hubs: data.hubs || [],
     crews: data.crews || [],
     methods: data.methods || [],
-    destinations: data.destinations || []
+    destinations: data.destinations || [],
+    categories: data.categories || []
   };
 
   if (!validateUiLabels(data.labels)) {
@@ -1418,6 +1484,9 @@ async function createShipment() {
   const weightInput = document.getElementById('weightKg');
   const weightKg =
     normalizeShipmentWeightValue(weightInput.value);
+  const categories = getSelectedCategories(
+    document.getElementById('categories')
+  );
   const comment = document.getElementById('comment').value.trim();
 
   if (!unit) {
@@ -1454,12 +1523,15 @@ async function createShipment() {
 
   weightInput.value = weightKg;
 
-  if (!comment) {
-    showToast(uiLabels.commentRequired);
+  if (!categories.length) {
+    showToast(uiLabels.categoriesRequired);
     return;
   }
 
-  if (!validateLength(comment, 3, 1000)) {
+  if (
+    comment &&
+    !validateLength(comment, 3, 1000)
+  ) {
     showToast(uiLabels.commentLength);
 
     return;
@@ -1477,6 +1549,7 @@ async function createShipment() {
         unit,
         destination,
         weightKg,
+        categories,
         comment
       }
     );
@@ -1489,6 +1562,11 @@ async function createShipment() {
     document.getElementById('unit').value = '';
     document.getElementById('destination').value = '';
     document.getElementById('weightKg').value = '';
+    document
+      .querySelectorAll('#categories input[type="checkbox"]')
+      .forEach(input => {
+        input.checked = false;
+      });
     document.getElementById('comment').value = '';
 
     shipmentForm.classList.remove('form-open');
@@ -2601,6 +2679,10 @@ function renderDetailsView(item) {
     <div>
       <b>ID:</b> ${escapeHtml(item.id)}
     </div>
+
+    <div>
+      <b>${escapeHtml(uiLabels.categories)}:</b> ${renderDetailsValue(item.categories)}
+    </div>
   
     <div class="details-comment">
       <b>${escapeHtml(uiLabels.comment)}:</b>
@@ -2735,6 +2817,14 @@ function renderEditForm(item) {
         </select>
       </div>
 
+      <label class="edit-select-field">
+        <span>${escapeHtml(uiLabels.categories)}</span>
+
+        <div class="category-options edit-categories">
+          ${buildCategoryOptions(item.categories)}
+        </div>
+      </label>
+
       <textarea
         class="edit-comment"
         placeholder="${escapeHtml(uiLabels.comment)}"
@@ -2795,6 +2885,9 @@ function getEditData(details) {
       details.querySelector('.edit-weight-kg').value
     ),
     status: details.querySelector('.edit-status').value,
+    categories: getSelectedCategories(
+      details.querySelector('.edit-categories')
+    ),
     comment: details.querySelector('.edit-comment').value.trim()
   };
 }
@@ -2820,6 +2913,7 @@ function getItemEditData(item) {
       ),
     weightKg: String(item.weightKg || '').trim(),
     status: String(item.status || ''),
+    categories: parseShipmentCategories(item.categories),
     comment: String(item.comment || '').trim()
   };
 }
@@ -2943,6 +3037,11 @@ function validateEditData(data) {
     return false;
   }
 
+  if (!data.categories.length) {
+    showToast(uiLabels.categoriesRequired);
+    return false;
+  }
+
   if (!data.destination) {
     showToast(uiLabels.destinationRequired);
     return false;
@@ -2954,12 +3053,10 @@ function validateEditData(data) {
     return false;
   }
 
-  if (!data.comment) {
-    showToast(uiLabels.commentRequired);
-    return false;
-  }
-
-  if (!validateLength(data.comment, 3, 1000)) {
+  if (
+    data.comment &&
+    !validateLength(data.comment, 3, 1000)
+  ) {
     showToast(uiLabels.commentLength);
 
     return false;
