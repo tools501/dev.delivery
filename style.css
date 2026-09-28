@@ -1613,9 +1613,26 @@ textarea:focus {
   gap: 12px;
 }
 
+.shipment-sort-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+
+  margin:
+    -4px 0
+    12px;
+}
+
+.shipment-sort-row > span {
+  color: #777;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .shipment-sort-wrap {
   width: auto;
-  min-width: 126px;
+  min-width: 168px;
 }
 
 .shipment-sort-wrap select {
@@ -2781,7 +2798,7 @@ html {
     display: flex;
     align-items: center;
     margin-top: 5px;
-    margin-bottom: 14px;
+    margin-bottom: 8px;
   }
 
   .shipments-title {
@@ -2792,8 +2809,15 @@ html {
     gap: 8px;
   }
 
+  .shipment-sort-row {
+    justify-content: flex-start;
+    margin:
+      -2px 0
+      12px;
+  }
+
   .shipment-sort-wrap {
-    min-width: 112px;
+    min-width: 164px;
   }
 
   .shipment-sort-wrap select {
