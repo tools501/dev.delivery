@@ -350,6 +350,64 @@ textarea:focus {
   font-style: italic;
 }
 
+.category-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.category-field > span {
+  color: #777;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.category-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.category-option {
+  cursor: pointer;
+  user-select: none;
+}
+
+.category-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.category-option span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  background: #fbfbfb;
+  color: #555;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.category-option input:checked + span {
+  border-color: #b8c4a5;
+  background: #edf3e6;
+  color: #2f3a26;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 1px 2px rgba(0,0,0,0.035);
+}
+
 .details-edit-form {
   display: flex;
   flex-direction: column;
@@ -2433,6 +2491,17 @@ html {
   .details-edit-form select,
   .admin-dashboard select {
     padding-right: 34px;
+  }
+
+  .category-option input {
+    min-height: 0;
+    padding: 0;
+  }
+
+  .category-option span {
+    min-height: 32px;
+    padding: 7px 10px;
+    font-size: 13px;
   }
 
   .form textarea,
