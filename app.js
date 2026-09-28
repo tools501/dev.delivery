@@ -1038,7 +1038,26 @@ function compareShipmentsByDeliveryDate(a, b) {
   const sentA = getShipmentDateTimestamp(a.sentAtRaw);
   const sentB = getShipmentDateTimestamp(b.sentAtRaw);
 
+  const isNewWithoutSentA =
+    !sentA &&
+    a.status === DEFAULT_SHIPMENT_STATUS;
+  const isNewWithoutSentB =
+    !sentB &&
+    b.status === DEFAULT_SHIPMENT_STATUS;
+
+  if (isNewWithoutSentA !== isNewWithoutSentB) {
+    return isNewWithoutSentA ? -1 : 1;
+  }
+
   if (sentA !== sentB) {
+    if (!sentA) {
+      return 1;
+    }
+
+    if (!sentB) {
+      return -1;
+    }
+
     return sentB - sentA;
   }
 
