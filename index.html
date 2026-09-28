@@ -315,21 +315,6 @@
       
         <div class="shipments-header-actions">
 
-          <div class="select-wrap shipment-sort-wrap">
-            <select
-              id="shipmentSortMode"
-              aria-label="Сортування"
-            >
-              <option value="createdAt">
-                Створення
-              </option>
-
-              <option value="sentAt">
-                Дата доставки
-              </option>
-            </select>
-          </div>
-
           <button
             id="shipmentSearchToggle"
             class="shipment-search-toggle"
@@ -346,6 +331,27 @@
 
         </div>
       
+      </div>
+
+      <div class="shipment-sort-row">
+        <span>
+          Сортувати:
+        </span>
+
+        <div class="select-wrap shipment-sort-wrap">
+          <select
+            id="shipmentSortMode"
+            aria-label="Сортування"
+          >
+            <option value="createdAt">
+              за створенням
+            </option>
+
+            <option value="sentAt">
+              за датою доставки
+            </option>
+          </select>
+        </div>
       </div>
 
       <div
