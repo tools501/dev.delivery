@@ -22,6 +22,7 @@ let activeListFilter = null;
 let shipmentSearchQuery = '';
 let shipmentSearchOpened = false;
 let shipmentPendingDelete = null;
+let shipmentSortMode = 'createdAt';
 let shipmentOptions = {
   units: [],
   hubs: [],
@@ -150,6 +151,8 @@ const DELIVERY_PRIORITIES = [
 const DASHBOARD_ALL_VALUE = 'Всі';
 const API_TIMEOUT_MS = 30 * 1000;
 const TOKEN_EXPIRY_SAFETY_MS = 2 * 60 * 1000;
+const SHIPMENT_SORT_CREATED_AT = 'createdAt';
+const SHIPMENT_SORT_SENT_AT = 'sentAt';
 
 const DASHBOARD_FILTERS = [
   {
@@ -201,6 +204,9 @@ const shipmentSearchInput =
 
 const shipmentSearchCount =
   document.getElementById('shipmentSearchCount');
+
+const shipmentSortModeSelect =
+  document.getElementById('shipmentSortMode');
 
 const adminDashboard =
   document.getElementById('adminDashboard');
@@ -1020,6 +1026,39 @@ function getShipmentsVersion(items) {
   }, 0).toString();
 }
 
+function getShipmentDateTimestamp(value) {
+  const date = new Date(value);
+
+  return isNaN(date.getTime())
+    ? 0
+    : date.getTime();
+}
+
+function compareShipmentsByDeliveryDate(a, b) {
+  const sentA = getShipmentDateTimestamp(a.sentAtRaw);
+  const sentB = getShipmentDateTimestamp(b.sentAtRaw);
+
+  if (sentA !== sentB) {
+    return sentB - sentA;
+  }
+
+  return compareShipmentsByCreatedAt(a, b);
+}
+
+function compareShipmentsByCreatedAt(a, b) {
+  return getShipmentDateTimestamp(b.createdAtRaw) -
+         getShipmentDateTimestamp(a.createdAtRaw);
+}
+
+function sortShipments(items) {
+  const compare =
+    shipmentSortMode === SHIPMENT_SORT_SENT_AT
+      ? compareShipmentsByDeliveryDate
+      : compareShipmentsByCreatedAt;
+
+  return [...items].sort(compare);
+}
+
 function setUpdateNotice(hasUpdates) {
 
   if (hasUpdates) {
@@ -1626,7 +1665,7 @@ async function loadShipments() {
 
 function applyShipments(items) {
 
-  allShipments = items || [];
+  allShipments = sortShipments(items || []);
 
   lastKnownShipmentsVersion =
     getShipmentsVersion(allShipments);
@@ -1684,11 +1723,9 @@ function applyIncrementalShipmentChanges(
 
   if (!appliedIds.size) {
     if (hasDeletions) {
-      allShipments = Array.from(itemsById.values())
-        .sort((a, b) => {
-          return new Date(b.createdAtRaw) -
-                 new Date(a.createdAtRaw);
-        });
+      allShipments = sortShipments(
+        Array.from(itemsById.values())
+      );
 
       renderIncrementalShipmentDeletions(deletedIds);
       renderDashboard();
@@ -1698,11 +1735,9 @@ function applyIncrementalShipmentChanges(
     return;
   }
 
-  allShipments = Array.from(itemsById.values())
-    .sort((a, b) => {
-      return new Date(b.createdAtRaw) -
-             new Date(a.createdAtRaw);
-    });
+  allShipments = sortShipments(
+    Array.from(itemsById.values())
+  );
 
   if (hasDeletions) {
     renderIncrementalShipmentDeletions(deletedIds);
@@ -3727,6 +3762,12 @@ document
   });
 
 loadBtn.addEventListener('click', reloadAppData);
+
+shipmentSortModeSelect.addEventListener('change', () => {
+  shipmentSortMode = shipmentSortModeSelect.value;
+  allShipments = sortShipments(allShipments);
+  renderVisibleShipments();
+});
 
 shipmentSearchToggle.addEventListener(
   'click',
