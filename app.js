@@ -2,7 +2,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwI9PjMLd8zEZ671MHvRwUu
 const HUB_API_URL = 'https://script.google.com/macros/s/AKfycbyAHpUfM1RrPJbamCVcc5rGhUgRKoLRKSULBGnCNGLyCSaFU5lp7SX2Ge1Wwv9YEV5-Sg/exec';
 const SHARED_AUTH_TOKEN_KEY = 'tools501_google_id_token';
 const HUB_URL = '/hub/';
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.2.1';
 const TWO_FACTOR_CHECK_ENABLED = false;
 
 let authToken = null;
@@ -2596,6 +2596,26 @@ function renderDetailsValue(value) {
   return escapeHtml(normalized);
 }
 
+function renderDetailsComment(value) {
+  const normalized = String(value || '').trim();
+
+  if (!normalized) {
+    return `
+      <div>
+        <b>${escapeHtml(uiLabels.comment)}:</b> ${renderDetailsValue(normalized)}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="details-comment">
+      <b>${escapeHtml(uiLabels.comment)}:</b>
+
+      <div class="details-comment-text">${escapeHtml(normalized)}</div>
+    </div>
+  `;
+}
+
 function renderDetailsView(item) {
 
   const editButton = canEditShipment(item)
@@ -2684,11 +2704,7 @@ function renderDetailsView(item) {
       <b>${escapeHtml(uiLabels.categories)}:</b> ${renderDetailsValue(item.categories)}
     </div>
   
-    <div class="details-comment">
-      <b>${escapeHtml(uiLabels.comment)}:</b>
-
-      <div class="details-comment-text">${renderDetailsValue(item.comment)}</div>
-    </div>
+    ${renderDetailsComment(item.comment)}
 
     <div>
       <b>${escapeHtml(uiLabels.weightKg)}:</b> ${renderDetailsValue(item.weightKg)}
