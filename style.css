@@ -1613,33 +1613,16 @@ textarea:focus {
   gap: 12px;
 }
 
-.shipment-sort-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-
-  margin:
-    -4px 0
-    12px;
-}
-
-.shipment-sort-row > span {
-  color: #777;
-  font-size: 12px;
-  font-weight: 600;
-}
-
 .shipment-sort-wrap {
   width: auto;
-  min-width: 168px;
+  min-width: 116px;
 }
 
 .shipment-sort-wrap select {
   height: 31px;
   min-height: 31px;
   padding:
-    6px 30px 6px 10px;
+    6px 26px 6px 9px;
 
   color: #555;
   background: #fff;
@@ -2806,25 +2789,18 @@ html {
   }
 
   .shipments-header-actions {
-    gap: 8px;
-  }
-
-  .shipment-sort-row {
-    justify-content: flex-start;
-    margin:
-      -2px 0
-      12px;
+    gap: 6px;
   }
 
   .shipment-sort-wrap {
-    min-width: 164px;
+    min-width: 106px;
   }
 
   .shipment-sort-wrap select {
     height: 31px;
     min-height: 31px;
     padding:
-      6px 26px 6px 9px;
+      6px 24px 6px 8px;
 
     font-size: 12px;
   }
