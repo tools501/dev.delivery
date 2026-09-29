@@ -205,8 +205,17 @@ const shipmentSearchInput =
 const shipmentSearchCount =
   document.getElementById('shipmentSearchCount');
 
-const shipmentSortModeSelect =
-  document.getElementById('shipmentSortMode');
+const shipmentSortToggle =
+  document.getElementById('shipmentSortToggle');
+
+const shipmentSortPopover =
+  document.getElementById('shipmentSortPopover');
+
+const shipmentSortNotice =
+  document.getElementById('shipmentSortNotice');
+
+const clearShipmentSortBtn =
+  document.getElementById('clearShipmentSortBtn');
 
 const adminDashboard =
   document.getElementById('adminDashboard');
@@ -1081,12 +1090,16 @@ function sortShipments(items) {
 function setUpdateNotice(hasUpdates) {
 
   if (hasUpdates) {
-    loadBtn.innerText = 'Є оновлення';
+    loadBtn.innerText = '↻';
+    loadBtn.setAttribute('title', 'Є оновлення');
+    loadBtn.setAttribute('aria-label', 'Є оновлення. Оновити список');
     loadBtn.classList.add('has-updates');
     return;
   }
 
-  loadBtn.innerText = 'Оновити';
+  loadBtn.innerText = '↻';
+  loadBtn.setAttribute('title', 'Оновити список');
+  loadBtn.setAttribute('aria-label', 'Оновити список');
   loadBtn.classList.remove('has-updates');
 }
 
@@ -2261,6 +2274,59 @@ function renderVisibleShipments() {
     visibleItems.length
   );
   renderShipments(searchFilteredItems);
+}
+
+function updateShipmentSortUi() {
+  const isCustomSort =
+    shipmentSortMode === SHIPMENT_SORT_SENT_AT;
+
+  shipmentSortToggle.classList.toggle(
+    'is-active',
+    isCustomSort
+  );
+
+  shipmentSortNotice.classList.toggle(
+    'hidden',
+    !isCustomSort
+  );
+
+  shipmentSortPopover
+    .querySelectorAll('.shipment-sort-option')
+    .forEach(button => {
+      const isSelected =
+        button.dataset.sortMode === shipmentSortMode;
+
+      button.classList.toggle('is-selected', isSelected);
+      button.setAttribute(
+        'aria-checked',
+        isSelected ? 'true' : 'false'
+      );
+    });
+}
+
+function setShipmentSortPopoverOpened(opened) {
+  shipmentSortPopover.classList.toggle(
+    'hidden',
+    !opened
+  );
+
+  shipmentSortToggle.classList.toggle(
+    'popover-open',
+    opened
+  );
+
+  shipmentSortToggle.setAttribute(
+    'aria-expanded',
+    opened ? 'true' : 'false'
+  );
+}
+
+function applyShipmentSortMode(mode) {
+  shipmentSortMode = mode;
+  allShipments = sortShipments(allShipments);
+  setShipmentSortPopoverOpened(false);
+  updateShipmentSortUi();
+  renderVisibleShipments();
 }
 
 function setShipmentSearchOpened(opened) {
@@ -3782,10 +3848,25 @@ document
 
 loadBtn.addEventListener('click', reloadAppData);
 
-shipmentSortModeSelect.addEventListener('change', () => {
-  shipmentSortMode = shipmentSortModeSelect.value;
-  allShipments = sortShipments(allShipments);
-  renderVisibleShipments();
+shipmentSortToggle.addEventListener('click', event => {
+  event.stopPropagation();
+  setShipmentSortPopoverOpened(
+    shipmentSortPopover.classList.contains('hidden')
+  );
+});
+
+shipmentSortPopover.addEventListener('click', event => {
+  const button = event.target.closest('.shipment-sort-option');
+
+  if (!button) {
+    return;
+  }
+
+  applyShipmentSortMode(button.dataset.sortMode);
+});
+
+clearShipmentSortBtn.addEventListener('click', () => {
+  applyShipmentSortMode(SHIPMENT_SORT_CREATED_AT);
 });
 
 shipmentSearchToggle.addEventListener(
@@ -3879,9 +3960,26 @@ deleteShipmentModal.addEventListener('click', event => {
 document.addEventListener('keydown', event => {
   if (
     event.key === 'Escape' &&
+    !shipmentSortPopover.classList.contains('hidden')
+  ) {
+    setShipmentSortPopoverOpened(false);
+    return;
+  }
+
+  if (
+    event.key === 'Escape' &&
     !deleteShipmentModal.classList.contains('hidden')
   ) {
     closeDeleteShipmentModal();
+  }
+});
+
+document.addEventListener('click', event => {
+  if (
+    !shipmentSortPopover.classList.contains('hidden') &&
+    !event.target.closest('.shipment-sort-menu')
+  ) {
+    setShipmentSortPopoverOpened(false);
   }
 });
 
