@@ -315,22 +315,6 @@
       
         <div class="shipments-header-actions">
 
-          <div class="select-wrap shipment-sort-wrap">
-            <select
-              id="shipmentSortMode"
-              aria-label="Сортування списку"
-              title="Сортування списку"
-            >
-              <option value="createdAt">
-                Створення
-              </option>
-
-              <option value="sentAt">
-                Доставка
-              </option>
-            </select>
-          </div>
-
           <button
             id="shipmentSearchToggle"
             class="shipment-search-toggle"
@@ -341,12 +325,77 @@
             🔍
           </button>
 
-          <button id="loadBtn">
-            Оновити
+          <button
+            id="loadBtn"
+            type="button"
+            aria-label="Оновити список"
+            title="Оновити список"
+          >
+            ↻
           </button>
+
+          <div class="shipment-sort-menu">
+            <button
+              id="shipmentSortToggle"
+              class="shipment-sort-toggle"
+              type="button"
+              aria-label="Сортування списку"
+              aria-expanded="false"
+            >
+              ⇅
+            </button>
+
+            <div
+              id="shipmentSortPopover"
+              class="shipment-sort-popover hidden"
+              role="menu"
+              aria-label="Сортування списку"
+            >
+              <div class="shipment-sort-popover-title">
+                Сортувати список
+              </div>
+
+              <button
+                type="button"
+                class="shipment-sort-option"
+                data-sort-mode="createdAt"
+                role="menuitemradio"
+                aria-checked="true"
+              >
+                <span class="shipment-sort-check">✓</span>
+                <span>За датою створення замовлення</span>
+              </button>
+
+              <button
+                type="button"
+                class="shipment-sort-option"
+                data-sort-mode="sentAt"
+                role="menuitemradio"
+                aria-checked="false"
+              >
+                <span class="shipment-sort-check">✓</span>
+                <span>За датою доставки</span>
+              </button>
+            </div>
+          </div>
 
         </div>
       
+      </div>
+
+      <div
+        id="shipmentSortNotice"
+        class="shipment-sort-notice hidden"
+      >
+        <span>Сортування: за датою доставки</span>
+
+        <button
+          id="clearShipmentSortBtn"
+          type="button"
+          aria-label="Повернути сортування за створенням"
+        >
+          ×
+        </button>
       </div>
 
       <div
