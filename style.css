@@ -1632,6 +1632,7 @@ textarea:focus {
   border-radius: 11px;
 
   font-size: 13px;
+  font-family: inherit;
   line-height: 1;
 
   box-shadow:
@@ -1642,6 +1643,10 @@ textarea:focus {
     color 0.2s,
     border-color 0.2s,
   transform 0.2s;
+}
+
+.shipment-search-toggle {
+  font-size: 12px;
 }
 
 .shipment-search-toggle:hover,
@@ -1738,39 +1743,39 @@ textarea:focus {
 .shipment-sort-notice {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 
   margin:
-    -6px 0
-    10px;
-  padding: 5px 8px;
-
-  color: #555;
-  background: #f8f8f8;
-  border: 1px solid #e7e7e7;
-  border-radius: 999px;
-
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.shipment-sort-notice button {
-  width: 18px;
-  height: 18px;
+    -10px 0
+    6px;
   padding: 0;
 
   color: #777;
   background: transparent;
   border: none;
-  border-radius: 50%;
+  border-radius: 0;
 
-  font-size: 15px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.shipment-sort-notice button {
+  width: auto;
+  height: auto;
+  padding: 0;
+
+  color: #999;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+
+  font-size: 13px;
   line-height: 1;
 }
 
 .shipment-sort-notice button:hover {
   color: #111;
-  background: #ececec;
+  background: transparent;
 }
 
 .shipment-search-panel {
@@ -2910,14 +2915,18 @@ html {
     font-size: 13px;
   }
 
+  .shipment-search-toggle {
+    font-size: 12px;
+  }
+
   .shipment-sort-popover {
     right: -6px;
   }
 
   .shipment-sort-notice {
     margin:
-      -6px 0
-      10px;
+      -10px 0
+      6px;
     font-size: 11px;
   }
 
