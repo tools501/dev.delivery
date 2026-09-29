@@ -1382,6 +1382,11 @@ function applyUiLabels() {
     uiLabels.searchByDestinationAria
   );
 
+  shipmentSearchToggle.setAttribute(
+    'title',
+    uiLabels.searchByDestination
+  );
+
   shipmentSearchInput.placeholder =
     uiLabels.searchByDestination;
 
