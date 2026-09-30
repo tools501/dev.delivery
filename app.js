@@ -4034,4 +4034,5 @@ document
     renewSession();
   });
 
+updateShipmentSortUi();
 initializeAuth();
