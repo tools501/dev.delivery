@@ -1594,7 +1594,7 @@ textarea:focus {
   z-index: 20;
 
   margin-top: 32px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   padding: 6px 0;
 
   background: rgba(244,244,244,0.94);
@@ -1746,8 +1746,8 @@ textarea:focus {
   gap: 5px;
 
   margin:
-    0 0
-    10px;
+    -4px 0
+    7px;
   padding: 0;
 
   color: #777;
@@ -2925,8 +2925,8 @@ html {
 
   .shipment-sort-notice {
     margin:
-      0 0
-      10px;
+      -4px 0
+      7px;
     font-size: 11px;
   }
 
