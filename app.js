@@ -211,12 +211,6 @@ const shipmentSortToggle =
 const shipmentSortPopover =
   document.getElementById('shipmentSortPopover');
 
-const shipmentSortNotice =
-  document.getElementById('shipmentSortNotice');
-
-const clearShipmentSortBtn =
-  document.getElementById('clearShipmentSortBtn');
-
 const adminDashboard =
   document.getElementById('adminDashboard');
 
@@ -2290,11 +2284,6 @@ function updateShipmentSortUi() {
     isCustomSort
   );
 
-  shipmentSortNotice.classList.toggle(
-    'hidden',
-    !isCustomSort
-  );
-
   shipmentSortPopover
     .querySelectorAll('.shipment-sort-option')
     .forEach(button => {
@@ -3868,10 +3857,6 @@ shipmentSortPopover.addEventListener('click', event => {
   }
 
   applyShipmentSortMode(button.dataset.sortMode);
-});
-
-clearShipmentSortBtn.addEventListener('click', () => {
-  applyShipmentSortMode(SHIPMENT_SORT_CREATED_AT);
 });
 
 shipmentSearchToggle.addEventListener(
