@@ -1544,11 +1544,13 @@ textarea:focus {
   min-width: 0;
 }
 
-.dashboard-bar-fill.status-success {
+.dashboard-bar-fill.status-success,
+.delivery-calendar-entry.status-success {
   background: #6fb982;
 }
 
-.dashboard-bar-fill.status-delivered {
+.dashboard-bar-fill.status-delivered,
+.delivery-calendar-entry.status-delivered {
   background: #6fb7ba;
 }
 
@@ -1556,11 +1558,13 @@ textarea:focus {
   background: #9c8fd0;
 }
 
-.dashboard-bar-fill.status-warning {
+.dashboard-bar-fill.status-warning,
+.delivery-calendar-entry.status-warning {
   background: #eadb82;
 }
 
-.dashboard-bar-fill.status-danger {
+.dashboard-bar-fill.status-danger,
+.delivery-calendar-entry.status-danger {
   background: #d47a7a;
 }
 
@@ -1582,6 +1586,213 @@ textarea:focus {
   background: #fafafa;
 
   border-radius: 12px;
+}
+
+.dashboard-mode-switch {
+  display: inline-flex;
+  max-width: 100%;
+  gap: 3px;
+  margin-bottom: 12px;
+  padding: 3px;
+  background: #f4f4f4;
+  border: 1px solid #ececec;
+  border-radius: 12px;
+}
+
+.dashboard-mode-switch button {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #555;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.dashboard-mode-switch button[aria-pressed="true"] {
+  background: #fff;
+  color: #222;
+  border-color: #e5e5e5;
+  box-shadow: 0 1px 2px #0001;
+}
+
+.delivery-calendar-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.delivery-calendar-period {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.delivery-calendar-period button {
+  width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border: 1px solid #dedede;
+  border-radius: 10px;
+  background: #fafafa;
+  color: #333;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.delivery-calendar-period button:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+.delivery-calendar-date {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  color: #595959;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.delivery-calendar-date input {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 40px;
+  padding: 6px 10px;
+  border: 1px solid #dedede;
+  border-radius: 10px;
+  background: #fff;
+  color: #222;
+}
+
+.delivery-calendar-empty {
+  margin: 0 0 8px;
+  color: #595959;
+  font-size: 13px;
+}
+
+.delivery-calendar-scroll {
+  max-width: 100%;
+  max-height: min(60vh, 520px);
+  overflow: auto;
+  border: 1px solid #e7e7e7;
+  border-radius: 12px;
+}
+
+.delivery-calendar-table {
+  width: 100%;
+  min-width: 650px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12px;
+}
+
+.delivery-calendar-destination {
+  width: 114px;
+}
+
+.delivery-calendar-table th,
+.delivery-calendar-table td {
+  padding: 5px;
+  border-right: 1px solid #ececec;
+  border-bottom: 1px solid #ececec;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+
+.delivery-calendar-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding-block: 9px;
+  background: #f6f6f6;
+  color: #222;
+  font-variant-numeric: tabular-nums;
+}
+
+.delivery-calendar-table th:first-child {
+  position: sticky;
+  left: 0;
+  text-align: left;
+}
+
+.delivery-calendar-table thead th:first-child {
+  z-index: 3;
+}
+
+.delivery-calendar-table tbody th {
+  z-index: 1;
+  padding: 8px;
+  background: #fafafa;
+  color: #333;
+  font-weight: 600;
+}
+
+.delivery-calendar-table thead .is-today {
+  background: #eaf1fb;
+}
+
+.delivery-calendar-entry {
+  padding: 5px;
+  border-radius: 6px;
+  background: #f4f4f4;
+  color: #181818;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.delivery-calendar-entry + .delivery-calendar-entry {
+  margin-top: 4px;
+}
+
+.delivery-calendar-entry ul {
+  margin: 3px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 600px) {
+  .dashboard-mode-switch {
+    display: flex;
+  }
+
+  .dashboard-mode-switch button {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 40px;
+    padding-inline: 6px;
+  }
+
+  .delivery-calendar-period {
+    width: 100%;
+  }
+
+  .delivery-calendar-table {
+    min-width: 810px;
+  }
+
+  .delivery-calendar-destination {
+    width: 100px;
+  }
+
+  .delivery-calendar-entry {
+    font-size: 12px;
+  }
 }
 
 .shipments-header {
