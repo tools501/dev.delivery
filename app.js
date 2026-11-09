@@ -214,6 +214,17 @@ const shipmentSortPopover =
 const adminDashboard =
   document.getElementById('adminDashboard');
 
+const deliveryCalendar = typeof createDeliveryCalendar === 'function' ? createDeliveryCalendar({
+  isAllowed: isAdmin,
+  getShipments: () => allShipments,
+  getDestinations: () => shipmentOptions.destinations,
+  getStatusClass,
+  renderStatistics: renderDashboard,
+  allowedStatuses: new Set(SHIPMENT_STATUSES.filter(
+    status => !DELETABLE_SHIPMENT_STATUSES.includes(status)
+  ))
+}) : null;
+
 const dashboardFrom =
   document.getElementById('dashboardFrom');
 
@@ -1496,6 +1507,7 @@ function applyShipmentOptions(data) {
   uiLabels = data.labels;
 
   applyUiLabels();
+  deliveryCalendar?.configure(uiLabels, data.calendarTimeZone);
   populateCreateOptions();
 }
 
@@ -2551,6 +2563,10 @@ function renderDashboard() {
     return;
   }
 
+  if (deliveryCalendar?.refresh()) {
+    return;
+  }
+
   const filteredItems = filterDashboardShipments();
 
   if (!filteredItems) {
@@ -2605,6 +2621,8 @@ function renderDashboard() {
 }
 
 function setupAdminDashboard() {
+
+  deliveryCalendar?.reset();
 
   if (!isAdmin()) {
     adminDashboard.classList.add('hidden');
