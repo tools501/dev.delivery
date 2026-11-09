@@ -142,6 +142,12 @@
 
       <section id="adminDashboard" class="admin-dashboard hidden">
 
+        <div id="dashboardModeSwitch" class="dashboard-mode-switch hidden">
+          <button id="dashboardStatisticsButton" type="button" aria-controls="dashboardStatistics" aria-pressed="true"></button>
+          <button id="deliveryCalendarButton" type="button" aria-controls="deliveryCalendar" aria-pressed="false"></button>
+        </div>
+
+        <div id="dashboardStatistics">
         <div class="dashboard-header">
 
           <div class="dashboard-title">
@@ -241,6 +247,29 @@
 
           <span>Показати нульові</span>
         </label>
+        </div>
+
+        <div id="deliveryCalendar" class="delivery-calendar hidden" aria-labelledby="deliveryCalendarButton">
+          <div class="delivery-calendar-controls">
+            <div class="delivery-calendar-period">
+              <button id="deliveryCalendarPrevious" type="button">‹</button>
+              <span id="deliveryCalendarRange" aria-live="polite"></span>
+              <button id="deliveryCalendarNext" type="button">›</button>
+            </div>
+            <label class="delivery-calendar-date">
+              <span id="deliveryCalendarEndLabel"></span>
+              <input id="deliveryCalendarEnd" type="date">
+            </label>
+          </div>
+          <p id="deliveryCalendarEmpty" class="delivery-calendar-empty hidden"></p>
+          <div id="deliveryCalendarScroll" class="delivery-calendar-scroll" tabindex="0" role="region" aria-labelledby="deliveryCalendarButton">
+            <table class="delivery-calendar-table" aria-labelledby="deliveryCalendarButton">
+              <colgroup><col class="delivery-calendar-destination"><col span="7"></colgroup>
+              <thead id="deliveryCalendarHead"></thead>
+              <tbody id="deliveryCalendarBody"></tbody>
+            </table>
+          </div>
+        </div>
 
       </section>
 
@@ -557,6 +586,7 @@
 
   <script src="utils.js"></script>
   <script src="dashboard_export.js"></script>
+  <script src="delivery_calendar.js"></script>
   <script src="app.js"></script>
 
 </body>
