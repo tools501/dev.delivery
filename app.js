@@ -390,6 +390,7 @@ function isTokenActive(token) {
 
 function expireSession() {
 
+  deliveryCalendar?.closeOverlays();
   sessionExpired = true;
   authToken = null;
   clearInterval(sessionCountdownTimer);
@@ -963,6 +964,7 @@ async function api(
     result.error === 'AUTH_REQUIRED'
   ) {
 
+    deliveryCalendar?.closeOverlays();
     authToken = null;
     clearSharedAuthToken();
 
@@ -980,6 +982,7 @@ let toastTimeout = null;
 
 function showLoginScreen() {
 
+  deliveryCalendar?.closeOverlays();
   document.getElementById('app')
     .classList.add('hidden');
 
