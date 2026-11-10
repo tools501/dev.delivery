@@ -253,15 +253,26 @@
         <div id="deliveryCalendar" class="delivery-calendar hidden" aria-labelledby="deliveryCalendarButton">
           <div class="delivery-calendar-controls">
             <div class="delivery-calendar-period">
-              <button id="deliveryCalendarPrevious" type="button">‹</button>
-              <span id="deliveryCalendarRange" aria-live="polite"></span>
-              <button id="deliveryCalendarNext" type="button">›</button>
+              <button id="deliveryCalendarPrevious" class="delivery-calendar-arrow" type="button">‹</button>
+              <div id="deliveryCalendarDatePicker" class="delivery-calendar-date-picker">
+                <button id="deliveryCalendarRangeButton" class="delivery-calendar-range-button" type="button" aria-controls="deliveryCalendarDatePopover" aria-expanded="false">
+                  <span id="deliveryCalendarRange" aria-live="polite"></span>
+                  <span aria-hidden="true">▾</span>
+                </button>
+                <div id="deliveryCalendarDatePopover" class="delivery-calendar-date-popover hidden">
+                  <label class="delivery-calendar-date">
+                    <span id="deliveryCalendarEndLabel"></span>
+                    <input id="deliveryCalendarEnd" type="date">
+                  </label>
+                </div>
+              </div>
+              <button id="deliveryCalendarNext" class="delivery-calendar-arrow" type="button">›</button>
             </div>
-            <label class="delivery-calendar-date">
-              <span id="deliveryCalendarEndLabel"></span>
-              <input id="deliveryCalendarEnd" type="date">
-            </label>
-            <button id="deliveryCalendarExpand" class="delivery-calendar-action" type="button" aria-haspopup="dialog" aria-controls="deliveryCalendarExpanded"></button>
+            <button id="deliveryCalendarExpand" class="delivery-calendar-action delivery-calendar-icon-button" type="button" aria-haspopup="dialog" aria-controls="deliveryCalendarExpanded">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5" />
+              </svg>
+            </button>
           </div>
           <details id="deliveryCalendarCategoryFilter" class="delivery-calendar-filter hidden">
             <summary id="deliveryCalendarCategorySummary"></summary>
