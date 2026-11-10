@@ -255,16 +255,11 @@
             <div class="delivery-calendar-period">
               <button id="deliveryCalendarPrevious" class="delivery-calendar-arrow" type="button">‹</button>
               <div id="deliveryCalendarDatePicker" class="delivery-calendar-date-picker">
-                <button id="deliveryCalendarRangeButton" class="delivery-calendar-range-button" type="button" aria-controls="deliveryCalendarDatePopover" aria-expanded="false">
+                <button id="deliveryCalendarRangeButton" class="delivery-calendar-range-button" type="button" aria-controls="deliveryCalendarEnd" aria-expanded="false">
                   <span id="deliveryCalendarRange" aria-live="polite"></span>
                   <span aria-hidden="true">▾</span>
                 </button>
-                <div id="deliveryCalendarDatePopover" class="delivery-calendar-date-popover hidden">
-                  <label class="delivery-calendar-date">
-                    <span id="deliveryCalendarEndLabel"></span>
-                    <input id="deliveryCalendarEnd" type="date">
-                  </label>
-                </div>
+                <input id="deliveryCalendarEnd" class="delivery-calendar-date-input hidden" type="date">
               </div>
               <button id="deliveryCalendarNext" class="delivery-calendar-arrow" type="button">›</button>
             </div>
