@@ -263,6 +263,13 @@
             </label>
             <button id="deliveryCalendarExpand" class="delivery-calendar-action" type="button" aria-haspopup="dialog" aria-controls="deliveryCalendarExpanded"></button>
           </div>
+          <details id="deliveryCalendarCategoryFilter" class="delivery-calendar-filter hidden">
+            <summary id="deliveryCalendarCategorySummary"></summary>
+            <div class="delivery-calendar-filter-content">
+              <button id="deliveryCalendarAllCategories" class="delivery-calendar-action" type="button"></button>
+              <div id="deliveryCalendarCategoryOptions" class="delivery-calendar-category-options"></div>
+            </div>
+          </details>
           <p id="deliveryCalendarEmpty" class="delivery-calendar-empty hidden"></p>
           <div id="deliveryCalendarScroll" class="delivery-calendar-scroll" tabindex="0" role="region" aria-labelledby="deliveryCalendarButton">
             <table class="delivery-calendar-table" aria-labelledby="deliveryCalendarButton">
@@ -279,15 +286,6 @@
             <h2 id="deliveryCalendarExpandedTitle"></h2>
             <button id="deliveryCalendarCollapse" class="delivery-calendar-action" type="button"></button>
           </div>
-        </dialog>
-
-        <dialog id="deliveryCalendarDetails" class="delivery-calendar-details" aria-labelledby="deliveryCalendarDetailsTitle" aria-describedby="deliveryCalendarDetailsDate">
-          <div class="delivery-calendar-dialog-header">
-            <h2 id="deliveryCalendarDetailsTitle"></h2>
-            <button id="deliveryCalendarCloseDetails" class="delivery-calendar-action" type="button"></button>
-          </div>
-          <p id="deliveryCalendarDetailsDate" class="delivery-calendar-details-date"></p>
-          <div id="deliveryCalendarDetailsEntries" class="delivery-calendar-details-entries"></div>
         </dialog>
 
       </section>
@@ -454,7 +452,7 @@
 
       </div>
 
-      <div id="listFilterNotice" class="list-filter-notice hidden">
+      <div id="listFilterNotice" class="list-filter-notice hidden" tabindex="-1">
 
         <span id="listFilterText"></span>
 
