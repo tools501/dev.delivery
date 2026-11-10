@@ -126,7 +126,6 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
   const nextButton = element('deliveryCalendarNext');
   const range = element('deliveryCalendarRange');
   const datePicker = element('deliveryCalendarDatePicker');
-  const datePopover = element('deliveryCalendarDatePopover');
   const empty = element('deliveryCalendarEmpty');
   const scroller = element('deliveryCalendarScroll');
   const head = element('deliveryCalendarHead');
@@ -232,8 +231,9 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
   }
 
   function closeDatePicker(restoreFocus = false) {
-    if (datePopover.classList.contains('hidden')) return;
-    datePopover.classList.add('hidden');
+    if (endInput.classList.contains('hidden')) return;
+    endInput.classList.add('hidden');
+    datePicker.classList.remove('is-editing');
     rangeButton.setAttribute('aria-expanded', 'false');
     if (restoreFocus) rangeButton.focus({ preventScroll: true });
   }
@@ -385,16 +385,13 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
   collapseButton.addEventListener('click', () => closeExpanded());
   expandedDialog.addEventListener('cancel', event => {
     event.preventDefault();
-    if (datePopover.classList.contains('hidden')) closeExpanded();
+    if (endInput.classList.contains('hidden')) closeExpanded();
     else closeDatePicker(true);
   });
   rangeButton.addEventListener('click', () => {
     if (!selected || !isAllowed()) return;
-    if (!datePopover.classList.contains('hidden')) {
-      closeDatePicker();
-      return;
-    }
-    datePopover.classList.remove('hidden');
+    datePicker.classList.add('is-editing');
+    endInput.classList.remove('hidden');
     rangeButton.setAttribute('aria-expanded', 'true');
     endInput.focus({ preventScroll: true });
     try {
@@ -404,12 +401,15 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
     }
   });
   datePicker.addEventListener('keydown', event => {
-    if (event.key !== 'Escape' || datePopover.classList.contains('hidden')) return;
+    if (event.key !== 'Escape' || endInput.classList.contains('hidden')) return;
     event.preventDefault();
     closeDatePicker(true);
   });
   document.addEventListener('click', event => {
     if (!datePicker.contains(event.target)) closeDatePicker();
+  });
+  datePicker.addEventListener('focusout', event => {
+    if (event.relatedTarget && !datePicker.contains(event.relatedTarget)) closeDatePicker();
   });
   categoryOptions.addEventListener('change', event => {
     if (!selected || !isAllowed() || !event.target.matches('input[type="checkbox"]')) return;
@@ -454,7 +454,8 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
         rangeButton.title = labels.calendarEndDate;
         collapseButton.textContent = labels.calendarClose;
         allCategoriesButton.textContent = labels.calendarAllCategories;
-        element('deliveryCalendarEndLabel').textContent = labels.calendarEndDate;
+        endInput.setAttribute('aria-label', labels.calendarEndDate);
+        endInput.title = labels.calendarEndDate;
         previousButton.setAttribute('aria-label', labels.calendarPreviousPeriod);
         nextButton.setAttribute('aria-label', labels.calendarNextPeriod);
         empty.textContent = labels.calendarEmpty;
