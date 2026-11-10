@@ -1625,41 +1625,86 @@ textarea:focus {
 }
 
 .delivery-calendar-controls {
+  --calendar-control-size: 32px;
   display: flex;
-  flex-wrap: wrap;
-  align-items: end;
+  align-items: center;
   justify-content: space-between;
-  gap: 8px 12px;
-  margin-bottom: 10px;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 
 .delivery-calendar-period {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  min-width: 0;
   text-align: center;
   font-size: 13px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
-.delivery-calendar-period button {
-  width: 40px;
-  min-height: 40px;
+.delivery-calendar-arrow,
+.delivery-calendar-controls .delivery-calendar-icon-button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--calendar-control-size);
+  width: var(--calendar-control-size);
+  min-height: var(--calendar-control-size);
   padding: 0;
   border: 1px solid #dedede;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #fafafa;
   color: #333;
-  font-size: 22px;
+  font-size: 19px;
   line-height: 1;
   cursor: pointer;
 }
 
-.delivery-calendar-period button:disabled {
+.delivery-calendar-arrow:disabled {
   opacity: .45;
   cursor: default;
+}
+
+.delivery-calendar-icon-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.delivery-calendar-date-picker {
+  position: relative;
+  min-width: 0;
+}
+
+.delivery-calendar-range-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  max-width: 100%;
+  min-height: var(--calendar-control-size);
+  padding: 3px 7px;
+  border: 1px solid #dedede;
+  border-radius: 8px;
+  background: #fafafa;
+  color: #333;
+  font: inherit;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.delivery-calendar-date-popover {
+  position: absolute;
+  z-index: 5;
+  inset-inline-start: 0;
+  top: calc(100% + 4px);
+  min-width: 148px;
+  padding: 8px;
+  border: 1px solid #dedede;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 4px 14px #0002;
 }
 
 .delivery-calendar-action {
@@ -2033,12 +2078,12 @@ textarea:focus {
     padding-inline: 6px;
   }
 
-  .delivery-calendar-period {
-    width: 100%;
+  .delivery-calendar-controls {
+    --calendar-control-size: 40px;
   }
 
-  .delivery-calendar-controls {
-    column-gap: 8px;
+  .delivery-calendar-period {
+    font-size: 12px;
   }
 
   .delivery-calendar-action {
@@ -2066,6 +2111,11 @@ textarea:focus {
 }
 
 @media (max-width: 360px) {
+  .delivery-calendar-range-button {
+    padding-inline: 4px;
+    font-size: 11px;
+  }
+
   .delivery-calendar-table thead time {
     font-size: 9px;
     white-space: nowrap;
