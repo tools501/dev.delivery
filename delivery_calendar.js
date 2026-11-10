@@ -3,7 +3,7 @@
 const DELIVERY_CALENDAR_DAYS = 7;
 const DELIVERY_CALENDAR_LABELS = [
   'calendarTitle', 'calendarEndDate', 'calendarPreviousPeriod',
-  'calendarNextPeriod', 'calendarEmpty'
+  'calendarNextPeriod', 'calendarEmpty', 'calendarExpand', 'calendarClose'
 ];
 
 function isDeliveryCalendarDay(day) {
@@ -83,12 +83,23 @@ function buildDeliveryCalendar(end, destinations, shipments, allowedStatuses) {
 
 function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getStatusClass, allowedStatuses, renderStatistics }) {
   const element = id => document.getElementById(id);
+  const expandedDialog = element('deliveryCalendarExpanded');
+  const detailsDialog = element('deliveryCalendarDetails');
+  if (!expandedDialog?.showModal || !detailsDialog?.showModal) return null;
+
   const switcher = element('dashboardModeSwitch');
   const statsButton = element('dashboardStatisticsButton');
   const calendarButton = element('deliveryCalendarButton');
   const statsPanel = element('dashboardStatistics');
   const statsHeader = statsPanel.querySelector('.dashboard-header');
   const calendarPanel = element('deliveryCalendar');
+  const calendarHome = element('deliveryCalendarHome');
+  const expandButton = element('deliveryCalendarExpand');
+  const collapseButton = element('deliveryCalendarCollapse');
+  const closeDetailsButton = element('deliveryCalendarCloseDetails');
+  const detailsTitle = element('deliveryCalendarDetailsTitle');
+  const detailsDate = element('deliveryCalendarDetailsDate');
+  const detailsEntries = element('deliveryCalendarDetailsEntries');
   const endInput = element('deliveryCalendarEnd');
   const previousButton = element('deliveryCalendarPrevious');
   const nextButton = element('deliveryCalendarNext');
@@ -101,6 +112,8 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
   let formatter;
   let selected = false;
   let end = '';
+  let detail = null;
+  let previewScrollTop = 0;
 
   function make(tag, text, className) {
     const node = document.createElement(tag);
@@ -111,7 +124,10 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
 
   function updateMode() {
     const available = Boolean(formatter) && isAllowed();
-    if (!available) selected = false;
+    if (!available) {
+      closeOverlays();
+      selected = false;
+    }
 
     switcher.classList.toggle('hidden', !available);
     statsHeader.classList.toggle('hidden', available);
@@ -124,6 +140,95 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
   function formatDay(day, full = false) {
     const [year, month, date] = day.split('-');
     return full ? `${date}.${month}.${year}` : `${date}.${month}`;
+  }
+
+  function getCategories(shipment) {
+    return String(shipment.categories || '').split(',').map(value => value.trim()).filter(Boolean);
+  }
+
+  function makeEntry(shipment) {
+    const entry = make('span', undefined, 'delivery-calendar-entry');
+    const statusClass = getStatusClass(shipment.status);
+    if (statusClass) entry.classList.add(statusClass);
+    entry.append(make('strong', shipment.status));
+    const categories = getCategories(shipment);
+    for (const category of categories.length ? categories : [labels.notSpecified]) {
+      entry.append(make('span', category, 'delivery-calendar-category'));
+    }
+    return entry;
+  }
+
+  function syncScrollLock() {
+    document.body.classList.toggle('delivery-calendar-modal-open', expandedDialog.open || detailsDialog.open);
+  }
+
+  function renderDetails(shipments) {
+    detailsTitle.textContent = detail.destination;
+    detailsDate.textContent = formatDay(detail.day, true);
+    detailsEntries.replaceChildren(...shipments.map(makeEntry));
+  }
+
+  function openDetails(destination, day, shipments, trigger) {
+    if (!selected || !isAllowed() || detailsDialog.open) return;
+    detail = { destination, day, trigger };
+    renderDetails(shipments);
+    detailsDialog.showModal();
+    syncScrollLock();
+    closeDetailsButton.focus();
+  }
+
+  function closeDetails(restoreFocus = true) {
+    if (!detailsDialog.open) return;
+    const trigger = detail?.trigger;
+    detailsDialog.close();
+    detail = null;
+    detailsEntries.replaceChildren();
+    syncScrollLock();
+    if (restoreFocus) (trigger?.isConnected ? trigger : scroller).focus({ preventScroll: true });
+  }
+
+  function closeExpanded(restoreFocus = true) {
+    if (!expandedDialog.open) return;
+    closeDetails(false);
+    expandedDialog.close();
+    calendarHome.append(calendarPanel);
+    scroller.scrollTop = previewScrollTop;
+    syncScrollLock();
+    if (restoreFocus) expandButton.focus({ preventScroll: true });
+  }
+
+  function closeOverlays() {
+    closeDetails(false);
+    closeExpanded(false);
+  }
+
+  function makeCellButton(destination, day, shipments) {
+    const button = make('button', undefined, 'delivery-calendar-cell-button');
+    button.type = 'button';
+    button.setAttribute('aria-haspopup', 'dialog');
+    const statuses = [...new Set(shipments.map(item => item.status))];
+    const categories = [...new Set(shipments.flatMap(getCategories))];
+    const description = `${destination} · ${formatDay(day, true)} · ${shipments.length} · ${statuses.join(', ')}`;
+    button.setAttribute('aria-label', description);
+    button.title = categories.length ? `${description}\n${categories.join(', ')}` : description;
+
+    const preview = make('span', undefined, 'delivery-calendar-preview');
+    preview.setAttribute('aria-hidden', 'true');
+    const markers = make('span', undefined, 'delivery-calendar-markers');
+    const colors = new Set(statuses.map(getStatusClass).filter(Boolean));
+    for (const color of colors) markers.append(make('span', undefined, `delivery-calendar-dot ${color}`));
+    if (shipments.length > 1) markers.append(make('span', shipments.length > 99 ? '99+' : String(shipments.length)));
+    preview.append(markers);
+    if (categories.length) {
+      const summary = categories.length > 1 ? `${categories[0]} +${categories.length - 1}` : categories[0];
+      preview.append(make('span', summary, 'delivery-calendar-category-summary'));
+    }
+    const entries = make('span', undefined, 'delivery-calendar-cell-entries');
+    entries.setAttribute('aria-hidden', 'true');
+    entries.append(...shipments.map(makeEntry));
+    button.append(preview, entries);
+    button.addEventListener('click', () => openDetails(destination, day, shipments, button));
+    return button;
   }
 
   function refresh() {
@@ -159,25 +264,24 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
     }
 
     const rows = document.createDocumentFragment();
+    let activeShipments = null;
     for (const row of calendar.rows) {
       const tr = make('tr');
-      const destination = make('th', row.destination);
+      const destination = make('th');
       destination.scope = 'row';
+      destination.title = row.destination;
+      destination.append(make('span', row.destination, 'delivery-calendar-destination-name'));
       tr.append(destination);
-      for (const cell of row.cells) {
+      for (const [index, cell] of row.cells.entries()) {
         const td = make('td');
-        for (const shipment of cell) {
-          const entry = make('div', undefined, 'delivery-calendar-entry');
-          const statusClass = getStatusClass(shipment.status);
-          if (statusClass) entry.classList.add(statusClass);
-          entry.append(make('strong', shipment.status));
-          const categories = String(shipment.categories || '').split(',').map(value => value.trim()).filter(Boolean);
-          const list = make('ul');
-          for (const category of categories.length ? categories : [labels.notSpecified]) {
-            list.append(make('li', category));
+        if (cell.length) {
+          const day = calendar.days[index];
+          const button = makeCellButton(row.destination, day, cell);
+          td.append(button);
+          if (detail?.day === day && detail.destination === row.destination) {
+            detail.trigger = button;
+            activeShipments = cell;
           }
-          entry.append(list);
-          td.append(entry);
         }
         tr.append(td);
       }
@@ -185,6 +289,10 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
     }
     head.replaceChildren(headings);
     body.replaceChildren(rows);
+    if (detail) {
+      if (activeShipments) renderDetails(activeShipments);
+      else closeDetails();
+    }
     return true;
   }
 
@@ -192,6 +300,7 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
     if (!formatter || !selected || !isAllowed()) return;
     const today = getDeliveryCalendarToday(formatter);
     end = isDeliveryCalendarDay(value) && value < today ? value : '';
+    previewScrollTop = 0;
     scroller.scrollTop = 0;
     refresh();
   }
@@ -204,6 +313,7 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
 
   statsButton.addEventListener('click', () => {
     if (!selected) return;
+    closeOverlays();
     selected = false;
     updateMode();
     renderStatistics();
@@ -213,7 +323,25 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
     selected = true;
     updateMode();
     refresh();
-    if (!end) scroller.scrollLeft = scroller.scrollWidth;
+  });
+  expandButton.addEventListener('click', () => {
+    if (!selected || !isAllowed() || expandedDialog.open) return;
+    previewScrollTop = scroller.scrollTop;
+    expandedDialog.append(calendarPanel);
+    expandedDialog.showModal();
+    scroller.scrollTop = previewScrollTop;
+    syncScrollLock();
+    collapseButton.focus();
+  });
+  collapseButton.addEventListener('click', () => closeExpanded());
+  closeDetailsButton.addEventListener('click', () => closeDetails());
+  expandedDialog.addEventListener('cancel', event => {
+    event.preventDefault();
+    closeExpanded();
+  });
+  detailsDialog.addEventListener('cancel', event => {
+    event.preventDefault();
+    closeDetails();
   });
   previousButton.addEventListener('click', () => movePeriod(-DELIVERY_CALENDAR_DAYS));
   nextButton.addEventListener('click', () => movePeriod(DELIVERY_CALENDAR_DAYS));
@@ -237,6 +365,10 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
       if (formatter) {
         statsButton.textContent = labels.dashboardTitle;
         calendarButton.textContent = labels.calendarTitle;
+        element('deliveryCalendarExpandedTitle').textContent = labels.calendarTitle;
+        expandButton.textContent = labels.calendarExpand;
+        collapseButton.textContent = labels.calendarClose;
+        closeDetailsButton.textContent = labels.calendarClose;
         element('deliveryCalendarEndLabel').textContent = labels.calendarEndDate;
         previousButton.setAttribute('aria-label', labels.calendarPreviousPeriod);
         nextButton.setAttribute('aria-label', labels.calendarNextPeriod);
@@ -245,11 +377,13 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
       updateMode();
     },
     reset() {
+      closeOverlays();
       selected = false;
       end = '';
       scroller.scrollTop = 0;
       updateMode();
     },
-    refresh
+    refresh,
+    closeOverlays
   };
 }
