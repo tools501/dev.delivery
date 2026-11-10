@@ -3,7 +3,8 @@
 const DELIVERY_CALENDAR_DAYS = 7;
 const DELIVERY_CALENDAR_LABELS = [
   'calendarTitle', 'calendarEndDate', 'calendarPreviousPeriod',
-  'calendarNextPeriod', 'calendarEmpty', 'calendarExpand', 'calendarClose'
+  'calendarNextPeriod', 'calendarEmpty', 'calendarExpand', 'calendarClose',
+  'calendarAllCategories', 'calendarListFilterPrefix'
 ];
 
 function isDeliveryCalendarDay(day) {
@@ -31,6 +32,15 @@ function getShipmentCalendarDay(shipment) {
 
   const day = `${match[3]}-${match[2]}-${match[1]}`;
   return isDeliveryCalendarDay(day) ? day : '';
+}
+
+function getDeliveryCalendarCategories(value) {
+  const categories = Array.isArray(value) ? value : String(value || '').split(',');
+  return categories.map(category => String(category || '').trim()).filter(Boolean);
+}
+
+function matchesDeliveryCalendarCategories(shipment, selection) {
+  return !selection.size || getDeliveryCalendarCategories(shipment.categories).some(category => selection.has(category));
 }
 
 function buildDeliveryCalendar(end, destinations, shipments, allowedStatuses) {
@@ -81,11 +91,12 @@ function buildDeliveryCalendar(end, destinations, shipments, allowedStatuses) {
   };
 }
 
-function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getStatusClass, allowedStatuses, renderStatistics }) {
+function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getCategoryOptions, getStatusClass,
+  allowedStatuses, renderStatistics, showCellShipments, onCategoryChange }) {
   const element = id => document.getElementById(id);
   const expandedDialog = element('deliveryCalendarExpanded');
-  const detailsDialog = element('deliveryCalendarDetails');
-  if (!expandedDialog?.showModal || !detailsDialog?.showModal) return null;
+  const categoryFilter = element('deliveryCalendarCategoryFilter');
+  if (!expandedDialog?.showModal || !categoryFilter) return null;
 
   const switcher = element('dashboardModeSwitch');
   const statsButton = element('dashboardStatisticsButton');
@@ -96,10 +107,9 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
   const calendarHome = element('deliveryCalendarHome');
   const expandButton = element('deliveryCalendarExpand');
   const collapseButton = element('deliveryCalendarCollapse');
-  const closeDetailsButton = element('deliveryCalendarCloseDetails');
-  const detailsTitle = element('deliveryCalendarDetailsTitle');
-  const detailsDate = element('deliveryCalendarDetailsDate');
-  const detailsEntries = element('deliveryCalendarDetailsEntries');
+  const categorySummary = element('deliveryCalendarCategorySummary');
+  const categoryOptions = element('deliveryCalendarCategoryOptions');
+  const allCategoriesButton = element('deliveryCalendarAllCategories');
   const endInput = element('deliveryCalendarEnd');
   const previousButton = element('deliveryCalendarPrevious');
   const nextButton = element('deliveryCalendarNext');
@@ -112,7 +122,7 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
   let formatter;
   let selected = false;
   let end = '';
-  let detail = null;
+  const selectedCategories = new Set();
   let previewScrollTop = 0;
 
   function make(tag, text, className) {
@@ -142,8 +152,54 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
     return full ? `${date}.${month}.${year}` : `${date}.${month}`;
   }
 
-  function getCategories(shipment) {
-    return String(shipment.categories || '').split(',').map(value => value.trim()).filter(Boolean);
+  function getFilteredShipments() {
+    const shipments = getShipments();
+    return selectedCategories.size
+      ? shipments.filter(shipment => matchesDeliveryCalendarCategories(shipment, selectedCategories))
+      : shipments;
+  }
+
+  function getCellShipments(destination, day) {
+    if (!isAllowed()) return [];
+    return getFilteredShipments().filter(shipment =>
+      allowedStatuses.has(shipment.status) && String(shipment.destination || '').trim() === destination &&
+      getShipmentCalendarDay(shipment) === day
+    );
+  }
+
+  function updateCategorySummary() {
+    const count = selectedCategories.size;
+    categorySummary.textContent = count ? `${labels.categories}: ${count}` : labels.calendarAllCategories;
+    categoryFilter.classList.toggle('is-filtered', count > 0);
+    allCategoriesButton.disabled = !count;
+    for (const input of categoryOptions.querySelectorAll('input')) {
+      input.checked = selectedCategories.has(input.value);
+    }
+  }
+
+  function renderCategoryOptions() {
+    const values = new Set(getDeliveryCalendarCategories(getCategoryOptions()));
+    for (const category of selectedCategories) {
+      if (!values.has(category)) selectedCategories.delete(category);
+    }
+    categoryOptions.replaceChildren(...Array.from(values, category => {
+      const option = make('label', undefined, 'delivery-calendar-category-option');
+      const input = make('input');
+      input.type = 'checkbox';
+      input.value = category;
+      option.append(input, make('span', category));
+      return option;
+    }));
+    categoryFilter.classList.toggle('hidden', !values.size);
+    updateCategorySummary();
+  }
+
+  function refreshCategoryFilter() {
+    updateCategorySummary();
+    previewScrollTop = 0;
+    scroller.scrollTop = 0;
+    refresh();
+    onCategoryChange();
   }
 
   function makeEntry(shipment) {
@@ -151,7 +207,7 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
     const statusClass = getStatusClass(shipment.status);
     if (statusClass) entry.classList.add(statusClass);
     entry.append(make('strong', shipment.status));
-    const categories = getCategories(shipment);
+    const categories = getDeliveryCalendarCategories(shipment.categories);
     for (const category of categories.length ? categories : [labels.notSpecified]) {
       entry.append(make('span', category, 'delivery-calendar-category'));
     }
@@ -159,37 +215,11 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
   }
 
   function syncScrollLock() {
-    document.body.classList.toggle('delivery-calendar-modal-open', expandedDialog.open || detailsDialog.open);
-  }
-
-  function renderDetails(shipments) {
-    detailsTitle.textContent = detail.destination;
-    detailsDate.textContent = formatDay(detail.day, true);
-    detailsEntries.replaceChildren(...shipments.map(makeEntry));
-  }
-
-  function openDetails(destination, day, shipments, trigger) {
-    if (!selected || !isAllowed() || detailsDialog.open) return;
-    detail = { destination, day, trigger };
-    renderDetails(shipments);
-    detailsDialog.showModal();
-    syncScrollLock();
-    closeDetailsButton.focus();
-  }
-
-  function closeDetails(restoreFocus = true) {
-    if (!detailsDialog.open) return;
-    const trigger = detail?.trigger;
-    detailsDialog.close();
-    detail = null;
-    detailsEntries.replaceChildren();
-    syncScrollLock();
-    if (restoreFocus) (trigger?.isConnected ? trigger : scroller).focus({ preventScroll: true });
+    document.body.classList.toggle('delivery-calendar-modal-open', expandedDialog.open);
   }
 
   function closeExpanded(restoreFocus = true) {
     if (!expandedDialog.open) return;
-    closeDetails(false);
     expandedDialog.close();
     calendarHome.append(calendarPanel);
     scroller.scrollTop = previewScrollTop;
@@ -198,16 +228,15 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
   }
 
   function closeOverlays() {
-    closeDetails(false);
     closeExpanded(false);
   }
 
   function makeCellButton(destination, day, shipments) {
     const button = make('button', undefined, 'delivery-calendar-cell-button');
     button.type = 'button';
-    button.setAttribute('aria-haspopup', 'dialog');
+    button.setAttribute('aria-controls', 'shipments');
     const statuses = [...new Set(shipments.map(item => item.status))];
-    const categories = [...new Set(shipments.flatMap(getCategories))];
+    const categories = [...new Set(shipments.flatMap(item => getDeliveryCalendarCategories(item.categories)))];
     const description = `${destination} · ${formatDay(day, true)} · ${shipments.length} · ${statuses.join(', ')}`;
     button.setAttribute('aria-label', description);
     button.title = categories.length ? `${description}\n${categories.join(', ')}` : description;
@@ -227,7 +256,12 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
     entries.setAttribute('aria-hidden', 'true');
     entries.append(...shipments.map(makeEntry));
     button.append(preview, entries);
-    button.addEventListener('click', () => openDetails(destination, day, shipments, button));
+    button.addEventListener('click', () => {
+      if (!selected || !isAllowed()) return;
+      categoryFilter.open = false;
+      closeExpanded(false);
+      showCellShipments(destination, day, formatDay(day, true));
+    });
     return button;
   }
 
@@ -236,7 +270,7 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
 
     const today = getDeliveryCalendarToday(formatter);
     const endDay = end && end < today ? end : today;
-    const calendar = buildDeliveryCalendar(endDay, getDestinations(), getShipments(), allowedStatuses);
+    const calendar = buildDeliveryCalendar(endDay, getDestinations(), getFilteredShipments(), allowedStatuses);
     endInput.max = today;
     endInput.value = endDay;
     nextButton.disabled = endDay === today;
@@ -264,7 +298,6 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
     }
 
     const rows = document.createDocumentFragment();
-    let activeShipments = null;
     for (const row of calendar.rows) {
       const tr = make('tr');
       const destination = make('th');
@@ -276,12 +309,7 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
         const td = make('td');
         if (cell.length) {
           const day = calendar.days[index];
-          const button = makeCellButton(row.destination, day, cell);
-          td.append(button);
-          if (detail?.day === day && detail.destination === row.destination) {
-            detail.trigger = button;
-            activeShipments = cell;
-          }
+          td.append(makeCellButton(row.destination, day, cell));
         }
         tr.append(td);
       }
@@ -289,10 +317,6 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
     }
     head.replaceChildren(headings);
     body.replaceChildren(rows);
-    if (detail) {
-      if (activeShipments) renderDetails(activeShipments);
-      else closeDetails();
-    }
     return true;
   }
 
@@ -334,14 +358,21 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
     collapseButton.focus();
   });
   collapseButton.addEventListener('click', () => closeExpanded());
-  closeDetailsButton.addEventListener('click', () => closeDetails());
   expandedDialog.addEventListener('cancel', event => {
     event.preventDefault();
     closeExpanded();
   });
-  detailsDialog.addEventListener('cancel', event => {
-    event.preventDefault();
-    closeDetails();
+  categoryOptions.addEventListener('change', event => {
+    if (!selected || !isAllowed() || !event.target.matches('input[type="checkbox"]')) return;
+    const { value, checked } = event.target;
+    if (checked) selectedCategories.add(value);
+    else selectedCategories.delete(value);
+    refreshCategoryFilter();
+  });
+  allCategoriesButton.addEventListener('click', () => {
+    if (!selected || !isAllowed()) return;
+    selectedCategories.clear();
+    refreshCategoryFilter();
   });
   previousButton.addEventListener('click', () => movePeriod(-DELIVERY_CALENDAR_DAYS));
   nextButton.addEventListener('click', () => movePeriod(DELIVERY_CALENDAR_DAYS));
@@ -368,11 +399,12 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
         element('deliveryCalendarExpandedTitle').textContent = labels.calendarTitle;
         expandButton.textContent = labels.calendarExpand;
         collapseButton.textContent = labels.calendarClose;
-        closeDetailsButton.textContent = labels.calendarClose;
+        allCategoriesButton.textContent = labels.calendarAllCategories;
         element('deliveryCalendarEndLabel').textContent = labels.calendarEndDate;
         previousButton.setAttribute('aria-label', labels.calendarPreviousPeriod);
         nextButton.setAttribute('aria-label', labels.calendarNextPeriod);
         empty.textContent = labels.calendarEmpty;
+        renderCategoryOptions();
       }
       updateMode();
     },
@@ -380,10 +412,14 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getS
       closeOverlays();
       selected = false;
       end = '';
+      selectedCategories.clear();
+      categoryFilter.open = false;
+      if (formatter) updateCategorySummary();
       scroller.scrollTop = 0;
       updateMode();
     },
     refresh,
+    getCellShipments,
     closeOverlays
   };
 }
