@@ -1935,6 +1935,34 @@ textarea:focus {
   font-size: 14px;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  #deliveryCalendarHome > .delivery-calendar:not(.hidden),
+  .delivery-calendar-details[open] {
+    animation: deliveryCalendarAppear 180ms ease-out;
+  }
+
+  .delivery-calendar-expanded[open],
+  .delivery-calendar-details[open]::backdrop {
+    animation: deliveryCalendarFadeIn 160ms ease-out;
+  }
+}
+
+@keyframes deliveryCalendarAppear {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes deliveryCalendarFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @media (min-width: 720px) {
   .delivery-calendar-category-summary {
     display: block;
