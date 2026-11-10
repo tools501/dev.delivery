@@ -20,6 +20,16 @@ function shiftDeliveryCalendarDay(day, offset) {
   return date.toISOString().slice(0, 10);
 }
 
+function formatDeliveryCalendarPeriod(start, end) {
+  const [startYear, startMonth, startDay] = start.split('-');
+  const [endYear, endMonth, endDay] = end.split('-');
+  let startLabel = `${startDay}.${startMonth}.${startYear}`;
+  if (startYear === endYear) {
+    startLabel = startMonth === endMonth ? startDay : `${startDay}.${startMonth}`;
+  }
+  return `${startLabel}–${endDay}.${endMonth}.${endYear}`;
+}
+
 function getDeliveryCalendarToday(formatter, now = new Date()) {
   const parts = Object.fromEntries(formatter.formatToParts(now).map(part => [part.type, part.value]));
   return `${parts.year}-${parts.month}-${parts.day}`;
@@ -96,7 +106,8 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
   const element = id => document.getElementById(id);
   const expandedDialog = element('deliveryCalendarExpanded');
   const categoryFilter = element('deliveryCalendarCategoryFilter');
-  if (!expandedDialog?.showModal || !categoryFilter) return null;
+  const rangeButton = element('deliveryCalendarRangeButton');
+  if (!expandedDialog?.showModal || !categoryFilter || !rangeButton) return null;
 
   const switcher = element('dashboardModeSwitch');
   const statsButton = element('dashboardStatisticsButton');
@@ -114,6 +125,8 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
   const previousButton = element('deliveryCalendarPrevious');
   const nextButton = element('deliveryCalendarNext');
   const range = element('deliveryCalendarRange');
+  const datePicker = element('deliveryCalendarDatePicker');
+  const datePopover = element('deliveryCalendarDatePopover');
   const empty = element('deliveryCalendarEmpty');
   const scroller = element('deliveryCalendarScroll');
   const head = element('deliveryCalendarHead');
@@ -218,8 +231,16 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
     document.body.classList.toggle('delivery-calendar-modal-open', expandedDialog.open);
   }
 
+  function closeDatePicker(restoreFocus = false) {
+    if (datePopover.classList.contains('hidden')) return;
+    datePopover.classList.add('hidden');
+    rangeButton.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) rangeButton.focus({ preventScroll: true });
+  }
+
   function closeExpanded(restoreFocus = true) {
     if (!expandedDialog.open) return;
+    closeDatePicker();
     expandedDialog.close();
     calendarHome.append(calendarPanel);
     scroller.scrollTop = previewScrollTop;
@@ -228,6 +249,7 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
   }
 
   function closeOverlays() {
+    closeDatePicker();
     closeExpanded(false);
   }
 
@@ -274,8 +296,10 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
     endInput.max = today;
     endInput.value = endDay;
     nextButton.disabled = endDay === today;
-    const period = `${formatDay(calendar.days[0], true)} – ${formatDay(endDay, true)}`;
+    const startDay = calendar.days[0];
+    const period = formatDeliveryCalendarPeriod(startDay, endDay);
     if (range.textContent !== period) range.textContent = period;
+    rangeButton.setAttribute('aria-label', `${labels.calendarEndDate}: ${formatDay(startDay, true)} – ${formatDay(endDay, true)}`);
     empty.classList.toggle('hidden', calendar.hasDeliveries);
 
     const headings = make('tr');
@@ -350,6 +374,7 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
   });
   expandButton.addEventListener('click', () => {
     if (!selected || !isAllowed() || expandedDialog.open) return;
+    closeDatePicker();
     previewScrollTop = scroller.scrollTop;
     expandedDialog.append(calendarPanel);
     expandedDialog.showModal();
@@ -360,7 +385,31 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
   collapseButton.addEventListener('click', () => closeExpanded());
   expandedDialog.addEventListener('cancel', event => {
     event.preventDefault();
-    closeExpanded();
+    if (datePopover.classList.contains('hidden')) closeExpanded();
+    else closeDatePicker(true);
+  });
+  rangeButton.addEventListener('click', () => {
+    if (!selected || !isAllowed()) return;
+    if (!datePopover.classList.contains('hidden')) {
+      closeDatePicker();
+      return;
+    }
+    datePopover.classList.remove('hidden');
+    rangeButton.setAttribute('aria-expanded', 'true');
+    endInput.focus({ preventScroll: true });
+    try {
+      endInput.showPicker?.();
+    } catch {
+      // The visible date input still works when the browser blocks a programmatic picker.
+    }
+  });
+  datePicker.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || datePopover.classList.contains('hidden')) return;
+    event.preventDefault();
+    closeDatePicker(true);
+  });
+  document.addEventListener('click', event => {
+    if (!datePicker.contains(event.target)) closeDatePicker();
   });
   categoryOptions.addEventListener('change', event => {
     if (!selected || !isAllowed() || !event.target.matches('input[type="checkbox"]')) return;
@@ -376,7 +425,10 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
   });
   previousButton.addEventListener('click', () => movePeriod(-DELIVERY_CALENDAR_DAYS));
   nextButton.addEventListener('click', () => movePeriod(DELIVERY_CALENDAR_DAYS));
-  endInput.addEventListener('change', () => setEnd(endInput.value));
+  endInput.addEventListener('change', () => {
+    setEnd(endInput.value);
+    closeDatePicker(true);
+  });
 
   return {
     configure(newLabels, timeZone) {
@@ -397,7 +449,9 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
         statsButton.textContent = labels.dashboardTitle;
         calendarButton.textContent = labels.calendarTitle;
         element('deliveryCalendarExpandedTitle').textContent = labels.calendarTitle;
-        expandButton.textContent = labels.calendarExpand;
+        expandButton.setAttribute('aria-label', labels.calendarExpand);
+        expandButton.title = labels.calendarExpand;
+        rangeButton.title = labels.calendarEndDate;
         collapseButton.textContent = labels.calendarClose;
         allCategoriesButton.textContent = labels.calendarAllCategories;
         element('deliveryCalendarEndLabel').textContent = labels.calendarEndDate;
