@@ -2111,6 +2111,12 @@ textarea:focus {
   }
 }
 
+@media (max-width: 1024px) {
+  .delivery-calendar-expanded .delivery-calendar-entry {
+    font-size: calc(10px - var(--calendar-font-reduction));
+  }
+}
+
 @media (min-width: 720px) {
   .delivery-calendar-category-summary {
     display: block;
