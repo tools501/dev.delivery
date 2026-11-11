@@ -2105,6 +2105,12 @@ textarea:focus {
   }
 }
 
+@media (max-width: 720px) and (orientation: portrait) {
+  #deliveryCalendarExpand {
+    display: none;
+  }
+}
+
 @media (orientation: landscape), (min-width: 900px) {
   .delivery-calendar-expanded .delivery-calendar-preview {
     display: none;
