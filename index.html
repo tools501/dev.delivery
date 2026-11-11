@@ -290,7 +290,13 @@
         <dialog id="deliveryCalendarExpanded" class="delivery-calendar-expanded" aria-labelledby="deliveryCalendarExpandedTitle">
           <div class="delivery-calendar-dialog-header">
             <h2 id="deliveryCalendarExpandedTitle"></h2>
-            <button id="deliveryCalendarCollapse" class="delivery-calendar-action" type="button"></button>
+            <div class="delivery-calendar-dialog-actions">
+              <div id="deliveryCalendarDaySwitch" class="delivery-calendar-day-switch hidden" role="group" aria-labelledby="deliveryCalendarExpandedTitle">
+                <button id="deliveryCalendar7Days" type="button" aria-pressed="true"></button>
+                <button id="deliveryCalendar14Days" type="button" aria-pressed="false"></button>
+              </div>
+              <button id="deliveryCalendarCollapse" class="delivery-calendar-action" type="button"></button>
+            </div>
           </div>
         </dialog>
 
