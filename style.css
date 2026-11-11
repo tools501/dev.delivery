@@ -1821,6 +1821,7 @@ textarea:focus {
 }
 
 .delivery-calendar-table {
+  --calendar-font-reduction: 0px;
   width: 100%;
   table-layout: fixed;
   border-collapse: separate;
@@ -1879,7 +1880,7 @@ textarea:focus {
   border-radius: 6px;
   background: #f4f4f4;
   color: #181818;
-  font-size: 11px;
+  font-size: calc(11px - var(--calendar-font-reduction));
   line-height: 1.35;
 }
 
@@ -1950,6 +1951,7 @@ textarea:focus {
   align-items: center;
   justify-content: center;
   gap: 2px 3px;
+  font-size: calc(11px - var(--calendar-font-reduction));
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -1966,7 +1968,7 @@ textarea:focus {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 10px;
+  font-size: calc(10px - var(--calendar-font-reduction));
   font-weight: 500;
 }
 
@@ -2099,6 +2101,12 @@ textarea:focus {
   to { opacity: 1; }
 }
 
+@media (max-width: 1200px) {
+  .delivery-calendar-table {
+    --calendar-font-reduction: 1px;
+  }
+}
+
 @media (min-width: 720px) {
   .delivery-calendar-category-summary {
     display: block;
@@ -2183,6 +2191,7 @@ textarea:focus {
   .delivery-calendar-markers {
     position: relative;
     z-index: 1;
+    font-size: calc(10px - var(--calendar-font-reduction));
   }
 }
 
