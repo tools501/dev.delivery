@@ -2141,6 +2141,10 @@ textarea:focus {
     font-size: 10px;
   }
 
+  .delivery-calendar-table thead th:first-child {
+    padding-left: 6px;
+  }
+
   .delivery-calendar-table td {
     padding: 2px;
   }
@@ -2148,6 +2152,23 @@ textarea:focus {
   .delivery-calendar-cell-button {
     min-height: 30px;
     font-size: 10px;
+  }
+
+  .delivery-calendar-preview {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3px 2px;
+  }
+
+  .delivery-calendar-status-bar {
+    height: 100%;
+    border-radius: inherit;
+  }
+
+  .delivery-calendar-markers {
+    position: relative;
+    z-index: 1;
   }
 }
 
