@@ -2022,6 +2022,10 @@ textarea:focus {
   max-height: none;
 }
 
+.delivery-calendar-expanded .delivery-calendar-destination {
+  width: 120px;
+}
+
 .delivery-calendar-dialog-header {
   display: flex;
   flex: none;
@@ -2103,7 +2107,7 @@ textarea:focus {
 
 @media (max-width: 1200px) {
   .delivery-calendar-table {
-    --calendar-font-reduction: 2px;
+    --calendar-font-reduction: 1px;
   }
 }
 
@@ -2156,6 +2160,10 @@ textarea:focus {
 
   .delivery-calendar-destination {
     width: 23%;
+  }
+
+  .delivery-calendar-expanded .delivery-calendar-destination {
+    width: 80px;
   }
 
   .delivery-calendar-table thead th {
