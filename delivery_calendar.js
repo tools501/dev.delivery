@@ -53,9 +53,10 @@ function matchesDeliveryCalendarCategories(shipment, selection) {
   return !selection.size || getDeliveryCalendarCategories(shipment.categories).some(category => selection.has(category));
 }
 
-function buildDeliveryCalendar(end, destinations, shipments, allowedStatuses) {
-  const days = Array.from({ length: DELIVERY_CALENDAR_DAYS }, (_, index) =>
-    shiftDeliveryCalendarDay(end, index - DELIVERY_CALENDAR_DAYS + 1)
+function buildDeliveryCalendar(end, destinations, shipments, allowedStatuses, dayCount = DELIVERY_CALENDAR_DAYS) {
+  if (dayCount !== 7 && dayCount !== 14) throw new RangeError('Invalid calendar day count');
+  const days = Array.from({ length: dayCount }, (_, index) =>
+    shiftDeliveryCalendarDay(end, index - dayCount + 1)
   );
   const dayIndexes = new Map(days.map((day, index) => [day, index]));
   const byDestination = new Map();
@@ -118,6 +119,9 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
   const calendarHome = element('deliveryCalendarHome');
   const expandButton = element('deliveryCalendarExpand');
   const collapseButton = element('deliveryCalendarCollapse');
+  const daySwitch = element('deliveryCalendarDaySwitch');
+  const sevenDaysButton = element('deliveryCalendar7Days');
+  const fourteenDaysButton = element('deliveryCalendar14Days');
   const categorySummary = element('deliveryCalendarCategorySummary');
   const categoryOptions = element('deliveryCalendarCategoryOptions');
   const allCategoriesButton = element('deliveryCalendarAllCategories');
@@ -130,12 +134,16 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
   const scroller = element('deliveryCalendarScroll');
   const head = element('deliveryCalendarHead');
   const body = element('deliveryCalendarBody');
+  const dayColumns = calendarPanel.querySelector('col[span]');
+  const calendarTable = calendarPanel.querySelector('table');
   let labels;
   let formatter;
   let selected = false;
   let end = '';
   const selectedCategories = new Set();
   let previewScrollTop = 0;
+  let expandedDays = DELIVERY_CALENDAR_DAYS;
+  let canChangeDays = false;
 
   function make(tag, text, className) {
     const node = document.createElement(tag);
@@ -243,6 +251,7 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
     closeDatePicker();
     expandedDialog.close();
     calendarHome.append(calendarPanel);
+    refresh();
     scroller.scrollTop = previewScrollTop;
     syncScrollLock();
     if (restoreFocus) expandButton.focus({ preventScroll: true });
@@ -292,7 +301,14 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
 
     const today = getDeliveryCalendarToday(formatter);
     const endDay = end && end < today ? end : today;
-    const calendar = buildDeliveryCalendar(endDay, getDestinations(), getFilteredShipments(), allowedStatuses);
+    const dayCount = expandedDialog.open ? expandedDays : DELIVERY_CALENDAR_DAYS;
+    const calendar = buildDeliveryCalendar(endDay, getDestinations(), getFilteredShipments(), allowedStatuses, dayCount);
+    dayColumns.span = dayCount;
+    calendarTable.classList.toggle('is-two-weeks', dayCount === 14);
+    previousButton.setAttribute('aria-label', dayCount === 14 ? labels.calendarPrevious14Days : labels.calendarPreviousPeriod);
+    nextButton.setAttribute('aria-label', dayCount === 14 ? labels.calendarNext14Days : labels.calendarNextPeriod);
+    sevenDaysButton?.setAttribute('aria-pressed', String(expandedDays === 7));
+    fourteenDaysButton?.setAttribute('aria-pressed', String(expandedDays === 14));
     endInput.max = today;
     endInput.value = endDay;
     nextButton.disabled = endDay === today;
@@ -359,6 +375,14 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
     setEnd(shiftDeliveryCalendarDay(end && end < today ? end : today, offset));
   }
 
+  function setExpandedDays(dayCount) {
+    if (!selected || !isAllowed() || !expandedDialog.open || !canChangeDays) return;
+    closeDatePicker();
+    expandedDays = dayCount;
+    scroller.scrollTop = 0;
+    refresh();
+  }
+
   statsButton.addEventListener('click', () => {
     if (!selected) return;
     closeOverlays();
@@ -376,8 +400,10 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
     if (!selected || !isAllowed() || expandedDialog.open) return;
     closeDatePicker();
     previewScrollTop = scroller.scrollTop;
+    expandedDays = DELIVERY_CALENDAR_DAYS;
     expandedDialog.append(calendarPanel);
     expandedDialog.showModal();
+    refresh();
     scroller.scrollTop = previewScrollTop;
     syncScrollLock();
     collapseButton.focus();
@@ -423,8 +449,10 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
     selectedCategories.clear();
     refreshCategoryFilter();
   });
-  previousButton.addEventListener('click', () => movePeriod(-DELIVERY_CALENDAR_DAYS));
-  nextButton.addEventListener('click', () => movePeriod(DELIVERY_CALENDAR_DAYS));
+  sevenDaysButton?.addEventListener('click', () => setExpandedDays(7));
+  fourteenDaysButton?.addEventListener('click', () => setExpandedDays(14));
+  previousButton.addEventListener('click', () => movePeriod(-(expandedDialog.open ? expandedDays : DELIVERY_CALENDAR_DAYS)));
+  nextButton.addEventListener('click', () => movePeriod(expandedDialog.open ? expandedDays : DELIVERY_CALENDAR_DAYS));
   endInput.addEventListener('change', () => {
     setEnd(endInput.value);
     closeDatePicker(true);
@@ -446,6 +474,15 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
         }
       }
       if (formatter) {
+        canChangeDays = Boolean(daySwitch && sevenDaysButton && fourteenDaysButton) &&
+          ['calendar7Days', 'calendar14Days', 'calendarPrevious14Days', 'calendarNext14Days'].every(key =>
+            typeof labels[key] === 'string' && labels[key].trim()
+          );
+        daySwitch?.classList.toggle('hidden', !canChangeDays);
+        if (canChangeDays) {
+          sevenDaysButton.textContent = labels.calendar7Days;
+          fourteenDaysButton.textContent = labels.calendar14Days;
+        } else expandedDays = DELIVERY_CALENDAR_DAYS;
         statsButton.textContent = labels.dashboardTitle;
         calendarButton.textContent = labels.calendarTitle;
         element('deliveryCalendarExpandedTitle').textContent = labels.calendarTitle;
@@ -467,6 +504,7 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
       closeOverlays();
       selected = false;
       end = '';
+      expandedDays = DELIVERY_CALENDAR_DAYS;
       selectedCategories.clear();
       categoryFilter.open = false;
       if (formatter) updateCategorySummary();
