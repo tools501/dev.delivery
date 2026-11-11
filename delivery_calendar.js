@@ -231,6 +231,8 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
     for (const category of categories.length ? categories : [labels.notSpecified]) {
       entry.append(make('span', category, 'delivery-calendar-category'));
     }
+    const hub = String(shipment.hub || '').trim() || labels.notSpecified;
+    entry.append(make('span', `${labels.hub}: ${hub}`, 'delivery-calendar-hub'));
     return entry;
   }
 
