@@ -1546,13 +1546,13 @@ textarea:focus {
 
 .dashboard-bar-fill.status-success,
 .delivery-calendar-entry.status-success,
-.delivery-calendar-dot.status-success {
+.delivery-calendar-status-segment.status-success {
   background: #6fb982;
 }
 
 .dashboard-bar-fill.status-delivered,
 .delivery-calendar-entry.status-delivered,
-.delivery-calendar-dot.status-delivered {
+.delivery-calendar-status-segment.status-delivered {
   background: #6fb7ba;
 }
 
@@ -1562,13 +1562,13 @@ textarea:focus {
 
 .dashboard-bar-fill.status-warning,
 .delivery-calendar-entry.status-warning,
-.delivery-calendar-dot.status-warning {
+.delivery-calendar-status-segment.status-warning {
   background: #eadb82;
 }
 
 .dashboard-bar-fill.status-danger,
 .delivery-calendar-entry.status-danger,
-.delivery-calendar-dot.status-danger {
+.delivery-calendar-status-segment.status-danger {
   background: #d47a7a;
 }
 
@@ -1920,8 +1920,20 @@ textarea:focus {
 }
 
 .delivery-calendar-preview {
+  position: relative;
   display: block;
-  padding: 3px 2px;
+  min-height: inherit;
+  padding: 7px 2px 3px;
+  border-radius: inherit;
+}
+
+.delivery-calendar-status-bar {
+  position: absolute;
+  inset: 0 0 auto;
+  display: flex;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 5px 5px 0 0;
 }
 
 .delivery-calendar-markers {
@@ -1934,10 +1946,10 @@ textarea:focus {
   font-variant-numeric: tabular-nums;
 }
 
-.delivery-calendar-dot {
-  flex: 0 0 6px;
-  height: 6px;
-  border-radius: 50%;
+.delivery-calendar-status-segment {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
   background: #777;
 }
 
