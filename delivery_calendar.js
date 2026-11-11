@@ -274,11 +274,12 @@ function createDeliveryCalendar({ isAllowed, getShipments, getDestinations, getC
 
     const preview = make('span', undefined, 'delivery-calendar-preview');
     preview.setAttribute('aria-hidden', 'true');
+    const statusBar = make('span', undefined, 'delivery-calendar-status-bar');
     const markers = make('span', undefined, 'delivery-calendar-markers');
     const colors = new Set(statuses.map(getStatusClass).filter(Boolean));
-    for (const color of colors) markers.append(make('span', undefined, `delivery-calendar-dot ${color}`));
+    for (const color of colors) statusBar.append(make('span', undefined, `delivery-calendar-status-segment ${color}`));
     if (shipments.length > 1) markers.append(make('span', shipments.length > 99 ? '99+' : String(shipments.length)));
-    preview.append(markers);
+    preview.append(statusBar, markers);
     if (categories.length) {
       const summary = categories.length > 1 ? `${categories[0]} +${categories.length - 1}` : categories[0];
       preview.append(make('span', summary, 'delivery-calendar-category-summary'));
