@@ -2103,7 +2103,7 @@ textarea:focus {
 
 @media (max-width: 1200px) {
   .delivery-calendar-table {
-    --calendar-font-reduction: 1px;
+    --calendar-font-reduction: 2px;
   }
 }
 
