@@ -2010,10 +2010,47 @@ textarea:focus {
 }
 
 .delivery-calendar-dialog-header h2 {
+  flex: 1;
   min-width: 0;
   margin: 0;
   font-size: 16px;
   overflow-wrap: anywhere;
+}
+
+.delivery-calendar-dialog-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.delivery-calendar-day-switch {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid #dedede;
+  border-radius: 10px;
+  background: #f4f4f4;
+}
+
+.delivery-calendar-day-switch button {
+  min-height: 34px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #555;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.delivery-calendar-day-switch button[aria-pressed="true"] {
+  background: #fff;
+  border-color: #ddd;
+  color: #222;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -2111,6 +2148,10 @@ textarea:focus {
   .delivery-calendar-table thead time {
     font-size: 9px;
     white-space: nowrap;
+  }
+
+  .delivery-calendar-table.is-two-weeks thead time {
+    white-space: normal;
   }
 }
 
