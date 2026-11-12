@@ -1736,6 +1736,8 @@ textarea:focus {
 .delivery-calendar-filter {
   flex: none;
   margin-bottom: 8px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 .delivery-calendar-filter summary {
